@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import styles from './settings.module.css'
 import { useAuth } from '@/app/_context/AuthContext'
 import { useAchievements } from '@/app/_context/AchievementsContext'
@@ -35,12 +36,14 @@ type TeamContributor = {
     user_id: number
     name: string
     total_submissions: number
+    unique_stories: number
     average_score: number
 }
 
 type TeamStatsResponse = {
     team_id: number
     total_submissions: number
+    unique_stories: number
     average_score: number | null
     top_contributors: TeamContributor[]
 }
@@ -325,6 +328,26 @@ export default function SettingsPage() {
     const [userSubmissions, setUserSubmissions] = useState<UserSubmissionSummary[] | null>(null)
     const [loadingUserSubmissions, setLoadingUserSubmissions] = useState(false)
     const [userSubmissionsError, setUserSubmissionsError] = useState<string | null>(null)
+
+    // Generic "are you sure?" confirmation for destructive actions (projects, teams).
+    const [pendingDelete, setPendingDelete] = useState<
+        | { type: 'project'; id: number; name: string }
+        | { type: 'team'; projectId: number; id: number; name: string }
+        | null
+    >(null)
+    const [deletingPending, setDeletingPending] = useState(false)
+
+    async function confirmPendingDelete() {
+        if (!pendingDelete) return
+        setDeletingPending(true)
+        if (pendingDelete.type === 'project') {
+            await handleDeleteProject(pendingDelete.id)
+        } else {
+            await handleDeleteTeam(pendingDelete.projectId, pendingDelete.id)
+        }
+        setDeletingPending(false)
+        setPendingDelete(null)
+    }
 
     // PAT reveal state
     const [showRevealForm, setShowRevealForm] = useState(false)
@@ -893,7 +916,7 @@ export default function SettingsPage() {
                 </button>
                 {role === 'admin' && (
                     <button
-                        onClick={() => handleDeleteTeam(projectId, team.id)}
+                        onClick={() => setPendingDelete({ type: 'team', projectId, id: team.id, name: team.name })}
                         style={{
                             background: 'none', border: 'none', cursor: 'pointer',
                             color: '#ef4444', padding: '2px 4px', borderRadius: 4,
@@ -950,7 +973,7 @@ export default function SettingsPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         {role === 'admin' && (
                             <button
-                                onClick={() => handleDeleteTeam(team.project_id, team.id)}
+                                onClick={() => setPendingDelete({ type: 'team', projectId: team.project_id, id: team.id, name: team.name })}
                                 style={{
                                     background: 'none', border: 'none', cursor: 'pointer',
                                     color: '#ef4444', padding: '3px 4px', borderRadius: 4, display: 'flex',
@@ -1385,7 +1408,7 @@ export default function SettingsPage() {
                                                         </button>
                                                         <div style={{ display: 'flex', gap: 6, paddingRight: 12 }}>
                                                             <button
-                                                                onClick={() => handleDeleteProject(p.id)}
+                                                                onClick={() => setPendingDelete({ type: 'project', id: p.id, name: p.name })}
                                                                 disabled={deletingProjectId === p.id}
                                                                 style={{
                                                                     background: 'none', border: 'none', cursor: 'pointer',
@@ -1717,7 +1740,7 @@ export default function SettingsPage() {
                                                                 <span style={{ fontSize: 13, fontWeight: 600 }}>{team.name}</span>
                                                                 {stats && (
                                                                     <span style={{ fontSize: 11, color: '#6b7280' }}>
-                                    {stats.total_submissions} submission{stats.total_submissions === 1 ? '' : 's'}
+                                    {stats.total_submissions} submission{stats.total_submissions === 1 ? '' : 's'} across {stats.unique_stories} {stats.unique_stories === 1 ? 'story' : 'stories'}
                                                                         {stats.average_score !== null && ` · avg ${stats.average_score}%`}
                                   </span>
                                                                 )}
@@ -1741,7 +1764,7 @@ export default function SettingsPage() {
                                                                         >
                                                                             <span style={{ fontSize: 13, color: '#1d4ed8', fontWeight: 500 }}>{c.name}</span>
                                                                             <span style={{ fontSize: 12, color: '#6b7280', display: 'flex', gap: 10 }}>
-                                        <span>{c.total_submissions} submission{c.total_submissions === 1 ? '' : 's'}</span>
+                                        <span>{c.total_submissions} submission{c.total_submissions === 1 ? '' : 's'} across {c.unique_stories} {c.unique_stories === 1 ? 'story' : 'stories'}</span>
                                         <span style={{ fontWeight: 600, color: c.average_score >= 70 ? '#15803d' : c.average_score >= 50 ? '#b45309' : '#dc2626' }}>
                                           avg {c.average_score}%
                                         </span>
@@ -1913,6 +1936,36 @@ export default function SettingsPage() {
                 </div>
             )}
 
+            {/* Delete project/team confirm modal */}
+            {pendingDelete && (
+                <div className={styles.modalOverlay} onClick={() => !deletingPending && setPendingDelete(null)}>
+                    <div className={styles.modalBox} onClick={e => e.stopPropagation()}>
+                        <p className={styles.modalTitle}>
+                            {pendingDelete.type === 'project' ? 'Delete project?' : 'Delete team?'}
+                        </p>
+                        <p className={styles.modalDesc}>
+                            {pendingDelete.type === 'project' ? (
+                                <>
+                                    This will permanently delete <strong>{pendingDelete.name}</strong> and all of its teams. Submissions
+                                    already recorded will remain in the history, but lose their project/team association. This cannot be undone.
+                                </>
+                            ) : (
+                                <>
+                                    This will permanently delete <strong>{pendingDelete.name}</strong> and remove all of its members.
+                                    Submissions already recorded will remain in the history, but lose their team association. This cannot be undone.
+                                </>
+                            )}
+                        </p>
+                        <div className={styles.modalActions}>
+                            <button className={styles.modalCancel} onClick={() => setPendingDelete(null)} disabled={deletingPending}>Cancel</button>
+                            <button className={styles.modalDelete} onClick={confirmPendingDelete} disabled={deletingPending}>
+                                {deletingPending ? 'Deleting…' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* User submissions modal (Users tab) */}
             {selectedUser && (
                 <div
@@ -1957,7 +2010,7 @@ export default function SettingsPage() {
                                                 {s.created_at ? new Date(s.created_at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}
                                             </p>
                                         </div>
-                                        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                       <span style={{
                           fontSize: 12, fontWeight: 700,
                           color: s.score >= 70 ? '#15803d' : s.score >= 50 ? '#b45309' : '#dc2626',
@@ -1970,6 +2023,18 @@ export default function SettingsPage() {
                                                 }}>
                           Q {s.code_quality}%
                         </span>
+                                            )}
+                                            {s.azure_work_item_id !== null && (
+                                                <Link
+                                                    href={`/user-story?work_item_id=${s.azure_work_item_id}`}
+                                                    style={{
+                                                        fontSize: 11, fontWeight: 600, color: '#5236ab',
+                                                        border: '1px solid #ddd6fe', borderRadius: 6, padding: '3px 8px',
+                                                        whiteSpace: 'nowrap',
+                                                    }}
+                                                >
+                                                    View
+                                                </Link>
                                             )}
                                         </div>
                                     </div>

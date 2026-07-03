@@ -45,7 +45,7 @@ export default function Page() {
     const [qualityThreshold, setQualityThreshold] = useState<number | null>(null)
     const [onlyMine, setOnlyMine] = useState(false)
     const [dateFilter, setDateFilter] = useState('any')
-    const [viewMode, setViewMode] = useState<'items' | 'submissions'>('items')
+    const [viewMode, setViewMode] = useState<'items' | 'submissions'>('submissions')
     const [page, setPage] = useState(0)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
@@ -303,8 +303,8 @@ export default function Page() {
                             value={viewMode}
                             onChange={e => { setViewMode(e.target.value as 'items' | 'submissions'); resetPage() }}
                         >
-                            <option value="items">By story (latest only)</option>
                             <option value="submissions">By submission (time)</option>
+                            <option value="items">By story (latest only)</option>
                         </select>
                     </label>
 
