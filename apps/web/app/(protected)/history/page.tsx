@@ -105,10 +105,18 @@ function HistoryContent() {
     const filtered = historyItems.filter(item => {
         if (!search.trim()) return true
         const q = search.toLowerCase()
+        // A purely numeric query (e.g. coming from a "view history for #7" link) means
+        // "this exact work item" — matching it as a substring would also catch #17, #27, etc.
+        if (/^\d+$/.test(q)) {
+            return item.azure_work_item_id.toLowerCase() === q
+        }
+        // Date matching only kicks in for date-shaped queries (contains "/"), otherwise a
+        // plain text search could spuriously match inside "03/07/26".
+        const matchesDate = q.includes('/') && item.date.toLowerCase().includes(q)
         return (
             item.azure_work_item_id.toLowerCase().includes(q) ||
             item.user_story_title.toLowerCase().includes(q) ||
-            item.date.toLowerCase().includes(q)
+            matchesDate
         )
     })
 

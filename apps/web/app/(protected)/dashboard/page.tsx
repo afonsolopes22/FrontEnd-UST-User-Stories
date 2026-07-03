@@ -42,7 +42,7 @@ export default function Page() {
     const { user } = useAuth()
 
     const [search, setSearch] = useState('')
-    const [filterUnder50, setFilterUnder50] = useState(false)
+    const [qualityThreshold, setQualityThreshold] = useState<number | null>(null)
     const [onlyMine, setOnlyMine] = useState(false)
     const [dateFilter, setDateFilter] = useState('any')
     const [viewMode, setViewMode] = useState<'items' | 'submissions'>('items')
@@ -106,7 +106,7 @@ export default function Page() {
             const q = search.toLowerCase()
             if (!wid.toLowerCase().includes(q) && !latest.user_story_title.toLowerCase().includes(q)) return false
         }
-        if (filterUnder50 && latest.score >= 50) return false
+        if (qualityThreshold !== null && latest.score >= qualityThreshold) return false
         if (onlyMine && user) {
             const belongsToMe = viewMode === 'submissions'
                 ? latest.user_id === user.user_id
@@ -115,11 +115,11 @@ export default function Page() {
         }
         if (cutoff && parseItemDate(latest.date, latest.time) < cutoff) return false
         return true
-    }), [rows, search, filterUnder50, onlyMine, user, viewMode, historyItems, cutoff])
+    }), [rows, search, qualityThreshold, onlyMine, user, viewMode, historyItems, cutoff])
 
     const totalPages = Math.ceil(filtered.length / pageSize)
     const pageItems = filtered.slice(page * pageSize, (page + 1) * pageSize)
-    const hasFilters = search || filterUnder50 || onlyMine || dateFilter !== 'any' || teamFilter !== null
+    const hasFilters = search || qualityThreshold !== null || onlyMine || dateFilter !== 'any' || teamFilter !== null
 
     function resetPage() { setPage(0) }
 
@@ -196,10 +196,22 @@ export default function Page() {
                     </div>
                     <p className={styles.statLabel}>Average Score</p>
                     <p className={styles.statValue}>{avgScore}%</p>
-                    <p className={styles.statMeta}>Across all stories</p>
+                    <p className={styles.statMeta}>
+                        {statsRows.length === 0 ? 'No submissions yet' : `Averaged from ${statsRows.length} submission${statsRows.length === 1 ? '' : 's'}`}
+                    </p>
                 </div>
 
-                <div className={styles.statCard} data-tooltip="Stories scoring below 50% — these need review and improvement.">
+                <button
+                    type="button"
+                    className={styles.statCard}
+                    data-tooltip="Stories scoring below 50% — these need review and improvement. Click to filter the table."
+                    onClick={() => {
+                        setQualityThreshold(50)
+                        resetPage()
+                        document.getElementById('storiesTable')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }}
+                    style={{ cursor: 'pointer', textAlign: 'left', font: 'inherit', border: lowQualityCount > 0 ? '1px solid #fecaca' : undefined }}
+                >
                     <div className={styles.statIconRowRed}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -210,10 +222,10 @@ export default function Page() {
                     <p className={styles.statLabel}>Attention Needed Stories</p>
                     <p className={styles.statValue}>{lowQualityCount}</p>
                     {lowQualityCount > 0
-                        ? <p className={styles.statMetaRed}>Needs attention</p>
+                        ? <p className={styles.statMetaRed}>Needs attention · click to view</p>
                         : <p className={styles.statMetaGreen}>All good!</p>
                     }
-                </div>
+                </button>
             </div>
 
             {/* Filters */}
@@ -232,18 +244,24 @@ export default function Page() {
                 </div>
 
                 <div className={styles.filterGroup}>
-                    <label className={`${styles.filterSelect} ${styles.filterCheckboxLabel}`}>
+                    <label className={styles.filterSelect} id="qualityFilterLabel">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
                         </svg>
                         <span className={styles.filterLabel}>Quality:</span>
-                        <input
-                            type="checkbox"
-                            className={styles.filterCheckbox}
-                            checked={filterUnder50}
-                            onChange={e => { setFilterUnder50(e.target.checked); resetPage() }}
-                        />
-                        <span style={{ fontSize: 13, color: filterUnder50 ? '#dc2626' : '#374151', fontWeight: filterUnder50 ? 600 : 400 }}>Under 50%</span>
+                        <select
+                            className={styles.filterSelectEl}
+                            value={qualityThreshold ?? 'any'}
+                            onChange={e => { setQualityThreshold(e.target.value === 'any' ? null : Number(e.target.value)); resetPage() }}
+                        >
+                            <option value="any">Any</option>
+                            <option value="100">Below 100%</option>
+                            <option value="90">Below 90%</option>
+                            <option value="80">Below 80%</option>
+                            <option value="70">Below 70%</option>
+                            <option value="60">Below 60%</option>
+                            <option value="50">Below 50%</option>
+                        </select>
                     </label>
 
                     <label className={`${styles.filterSelect} ${styles.filterCheckboxLabel}`}>
@@ -312,7 +330,7 @@ export default function Page() {
                     {hasFilters && (
                         <button
                             className={styles.clearBtn}
-                            onClick={() => { setSearch(''); setFilterUnder50(false); setOnlyMine(false); setDateFilter('any'); setTeamFilter(null); resetPage() }}
+                            onClick={() => { setSearch(''); setQualityThreshold(null); setOnlyMine(false); setDateFilter('any'); setTeamFilter(null); resetPage() }}
                         >
                             Clear filters
                         </button>
@@ -329,7 +347,7 @@ export default function Page() {
                 </p>
             ) : (
                 <>
-                    <div className={styles.tableWrapper}>
+                    <div className={styles.tableWrapper} id="storiesTable">
                         <table className={styles.table}>
                             <thead>
                             <tr>
