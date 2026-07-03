@@ -432,12 +432,12 @@ export default function SettingsPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeSection, allTeams, token])
 
-    function openUserSubmissions(userId: number, name: string) {
+    function openUserSubmissions(teamId: number, userId: number, name: string) {
         setSelectedUser({ id: userId, name })
         setUserSubmissions(null)
         setUserSubmissionsError(null)
         setLoadingUserSubmissions(true)
-        fetch(`/api/users/${userId}/submissions?limit=10`, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`/api/teams/${teamId}/submissions?user_id=${userId}&limit=10`, { headers: { Authorization: `Bearer ${token}` } })
             .then(async r => {
                 const data = await r.json()
                 if (!r.ok) {
@@ -1755,7 +1755,7 @@ export default function SettingsPage() {
                                                                     stats.top_contributors.map(c => (
                                                                         <button
                                                                             key={c.user_id}
-                                                                            onClick={() => openUserSubmissions(c.user_id, c.name)}
+                                                                            onClick={() => openUserSubmissions(team.id, c.user_id, c.name)}
                                                                             style={{
                                                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
                                                                                 padding: '8px 14px', background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6',
