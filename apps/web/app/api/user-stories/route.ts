@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const teamId = searchParams.get('team_id')
     const page = searchParams.get('page') ?? '1'
-    const limit = searchParams.get('limit') ?? '100'
+    const limit = searchParams.get('limit') ?? '300'
 
     const qs = new URLSearchParams({ page, limit })
     if (teamId) qs.set('team_id', teamId)

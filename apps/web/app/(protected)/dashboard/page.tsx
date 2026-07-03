@@ -197,7 +197,9 @@ export default function Page() {
                     <p className={styles.statLabel}>Average Score</p>
                     <p className={styles.statValue}>{avgScore}%</p>
                     <p className={styles.statMeta}>
-                        {statsRows.length === 0 ? 'No submissions yet' : `Averaged from ${statsRows.length} submission${statsRows.length === 1 ? '' : 's'}`}
+                        {statsRows.length === 0
+                            ? 'No submissions yet'
+                            : `Latest score across ${statsRows.length} ${statsRows.length === 1 ? 'story' : 'stories'} (${statsSourceItems.length} total submissions)`}
                     </p>
                 </div>
 

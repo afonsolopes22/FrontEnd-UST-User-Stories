@@ -31,6 +31,29 @@ type Team = {
     created_by_user_id?: number | null
 }
 
+type TeamContributor = {
+    user_id: number
+    name: string
+    total_submissions: number
+    average_score: number
+}
+
+type TeamStatsResponse = {
+    team_id: number
+    total_submissions: number
+    average_score: number | null
+    top_contributors: TeamContributor[]
+}
+
+type UserSubmissionSummary = {
+    id: number
+    azure_work_item_id: number | null
+    user_story_title: string | null
+    score: number
+    code_quality: number | null
+    created_at: string | null
+}
+
 type BestPractice = {
     id: number
     description?: string
@@ -295,6 +318,14 @@ export default function SettingsPage() {
     const [savingGlobalTeam, setSavingGlobalTeam] = useState(false)
     const [globalTeamError, setGlobalTeamError] = useState<string | null>(null)
 
+    // ── Users tab ──────────────────────────────────────────────────────────
+    const [teamStats, setTeamStats] = useState<Record<number, TeamStatsResponse>>({})
+    const [loadingTeamStats, setLoadingTeamStats] = useState<Record<number, boolean>>({})
+    const [selectedUser, setSelectedUser] = useState<{ id: number; name: string } | null>(null)
+    const [userSubmissions, setUserSubmissions] = useState<UserSubmissionSummary[] | null>(null)
+    const [loadingUserSubmissions, setLoadingUserSubmissions] = useState(false)
+    const [userSubmissionsError, setUserSubmissionsError] = useState<string | null>(null)
+
     // PAT reveal state
     const [showRevealForm, setShowRevealForm] = useState(false)
     const [patPassword, setPatPassword] = useState('')
@@ -344,7 +375,7 @@ export default function SettingsPage() {
 
     // Load all teams for Teams tab
     useEffect(() => {
-        if (activeSection !== 'teams' || !user?.organization_id || !token) return
+        if ((activeSection !== 'teams' && activeSection !== 'users') || !user?.organization_id || !token) return
         setLoadingAllTeams(true)
         fetch(`/api/organizations/${user.organization_id}/projects`, { headers: { Authorization: `Bearer ${token}` } })
             .then(r => r.json())
@@ -362,6 +393,39 @@ export default function SettingsPage() {
             })
             .finally(() => setLoadingAllTeams(false))
     }, [activeSection, user?.organization_id, token])
+
+    // Load per-team stats (member breakdown) for the Users tab, once teams are known
+    useEffect(() => {
+        if (activeSection !== 'users' || !token) return
+        const teamIds = Object.values(allTeams).flat().map(t => t.id)
+        teamIds.forEach(id => {
+            if (teamStats[id] !== undefined || loadingTeamStats[id]) return
+            setLoadingTeamStats(prev => ({ ...prev, [id]: true }))
+            fetch(`/api/teams/${id}/stats`, { headers: { Authorization: `Bearer ${token}` } })
+                .then(r => (r.ok ? r.json() : null))
+                .then(data => { if (data) setTeamStats(prev => ({ ...prev, [id]: data })) })
+                .finally(() => setLoadingTeamStats(prev => ({ ...prev, [id]: false })))
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeSection, allTeams, token])
+
+    function openUserSubmissions(userId: number, name: string) {
+        setSelectedUser({ id: userId, name })
+        setUserSubmissions(null)
+        setUserSubmissionsError(null)
+        setLoadingUserSubmissions(true)
+        fetch(`/api/users/${userId}/submissions?limit=10`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(async r => {
+                const data = await r.json()
+                if (!r.ok) {
+                    setUserSubmissionsError(data?.error ?? 'Failed to load submissions.')
+                    return
+                }
+                setUserSubmissions(Array.isArray(data) ? data : [])
+            })
+            .catch(() => setUserSubmissionsError('Unexpected error.'))
+            .finally(() => setLoadingUserSubmissions(false))
+    }
 
     async function handleSave() {
         const errors = {
@@ -1033,7 +1097,7 @@ export default function SettingsPage() {
                     <p className={styles.sidebarSectionLabel}>Organization</p>
                 </div>
                 <ul className={styles.navList}>
-                    {ORG_ITEMS.filter(item => item.id !== 'pat' || role === 'admin').map(item => <NavItem key={item.id} item={item} />)}
+                    {ORG_ITEMS.filter(item => (item.id !== 'pat' || role === 'admin') && (item.id !== 'users' || role === 'admin' || role === 'scrum_master')).map(item => <NavItem key={item.id} item={item} />)}
                 </ul>
 
                 <div className={styles.sidebarSection} style={{ marginTop: '0.5rem' }}>
@@ -1610,7 +1674,97 @@ export default function SettingsPage() {
                         </div>
                     </div>
 
-                    /* ── PAT tab ───────────────────────────────────────────────────────── */
+                    /* ── Users tab ─────────────────────────────────────────────────────── */
+                ) : activeSection === 'users' ? (
+                    <div className={styles.contentArea} style={{ gridTemplateColumns: '1fr' }}>
+                        <div className={styles.formCard}>
+                            <h2 className={styles.formTitle}>Users</h2>
+                            <p className={styles.formSubtitle}>
+                                Individual stats per team member. Click a member to see their latest submissions.
+                            </p>
+
+                            {loadingAllTeams ? (
+                                <p className={styles.placeholderDesc} style={{ marginTop: '1rem' }}>Loading teams…</p>
+                            ) : !user?.organization_id ? (
+                                <p className={styles.placeholderDesc} style={{ marginTop: '1rem' }}>Set up an organization first.</p>
+                            ) : allProjects.length === 0 ? (
+                                <p className={styles.placeholderDesc} style={{ marginTop: '1rem' }}>No projects yet.</p>
+                            ) : (
+                                <div style={{ marginTop: '1rem' }}>
+                                    {allProjects.map(project => {
+                                        const projectTeamsList = allTeams[project.id] ?? []
+                                        if (projectTeamsList.length === 0) return null
+                                        return (
+                                            <div key={project.id} style={{ marginBottom: '1.5rem' }}>
+                                                <p style={{
+                                                    margin: '0 0 6px',
+                                                    fontSize: 11, fontWeight: 700, color: '#9ca3af',
+                                                    textTransform: 'uppercase', letterSpacing: '0.06em',
+                                                }}>
+                                                    {project.name}
+                                                </p>
+                                                {projectTeamsList.map(team => {
+                                                    const stats = teamStats[team.id]
+                                                    const isLoading = loadingTeamStats[team.id]
+                                                    return (
+                                                        <div key={team.id} style={{
+                                                            border: '1px solid #e5e7eb', borderRadius: 10, marginBottom: 8, overflow: 'hidden',
+                                                        }}>
+                                                            <div style={{
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+                                                                padding: '10px 14px', background: '#fafafa', borderBottom: '1px solid #e5e7eb',
+                                                            }}>
+                                                                <span style={{ fontSize: 13, fontWeight: 600 }}>{team.name}</span>
+                                                                {stats && (
+                                                                    <span style={{ fontSize: 11, color: '#6b7280' }}>
+                                    {stats.total_submissions} submission{stats.total_submissions === 1 ? '' : 's'}
+                                                                        {stats.average_score !== null && ` · avg ${stats.average_score}%`}
+                                  </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div style={{ padding: '4px 0' }}>
+                                                                {isLoading ? (
+                                                                    <p style={{ fontSize: 12, color: '#9ca3af', margin: '8px 14px' }}>Loading stats…</p>
+                                                                ) : !stats || stats.top_contributors.length === 0 ? (
+                                                                    <p style={{ fontSize: 12, color: '#9ca3af', margin: '8px 14px' }}>No submissions yet.</p>
+                                                                ) : (
+                                                                    stats.top_contributors.map(c => (
+                                                                        <button
+                                                                            key={c.user_id}
+                                                                            onClick={() => openUserSubmissions(c.user_id, c.name)}
+                                                                            style={{
+                                                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+                                                                                padding: '8px 14px', background: 'none', border: 'none', borderBottom: '1px solid #f3f4f6',
+                                                                                cursor: 'pointer', textAlign: 'left', font: 'inherit',
+                                                                            }}
+                                                                        >
+                                                                            <span style={{ fontSize: 13, color: '#1d4ed8', fontWeight: 500 }}>{c.name}</span>
+                                                                            <span style={{ fontSize: 12, color: '#6b7280', display: 'flex', gap: 10 }}>
+                                        <span>{c.total_submissions} submission{c.total_submissions === 1 ? '' : 's'}</span>
+                                        <span style={{ fontWeight: 600, color: c.average_score >= 70 ? '#15803d' : c.average_score >= 50 ? '#b45309' : '#dc2626' }}>
+                                          avg {c.average_score}%
+                                        </span>
+                                      </span>
+                                                                        </button>
+                                                                    ))
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        )
+                                    })}
+                                    {allProjects.every(p => (allTeams[p.id] ?? []).length === 0) && (
+                                        <p className={styles.placeholderDesc}>No teams yet.</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+
                 ) : activeSection === 'pat' ? (
                     <div className={styles.contentArea} style={{ gridTemplateColumns: '1fr' }}>
                         <div className={styles.formCard}>
@@ -1755,6 +1909,73 @@ export default function SettingsPage() {
                             <button className={styles.modalCancel} onClick={() => { setShowConfirm(false); setDeleteError(null) }} disabled={deleting}>Cancel</button>
                             <button className={styles.modalDelete} onClick={handleDelete} disabled={deleting}>{deleting ? 'Deleting…' : 'Delete'}</button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User submissions modal (Users tab) */}
+            {selectedUser && (
+                <div
+                    style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: 16 }}
+                    onClick={() => setSelectedUser(null)}
+                >
+                    <div
+                        style={{ background: '#fff', borderRadius: 12, padding: 24, width: '100%', maxWidth: 560, maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.2)' }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <h2 style={{ margin: 0, fontSize: 16 }}>{selectedUser.name}</h2>
+                            <button
+                                onClick={() => setSelectedUser(null)}
+                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 4 }}
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p style={{ margin: '0 0 16px', fontSize: 12, color: '#9ca3af' }}>Latest submissions</p>
+
+                        {loadingUserSubmissions ? (
+                            <p style={{ fontSize: 13, color: '#9ca3af' }}>Loading…</p>
+                        ) : userSubmissionsError ? (
+                            <p style={{ fontSize: 13, color: '#dc2626' }}>{userSubmissionsError}</p>
+                        ) : !userSubmissions || userSubmissions.length === 0 ? (
+                            <p style={{ fontSize: 13, color: '#9ca3af' }}>No submissions yet.</p>
+                        ) : (
+                            <div>
+                                {userSubmissions.map(s => (
+                                    <div key={s.id} style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                                        padding: '8px 0', borderBottom: '1px solid #f3f4f6',
+                                    }}>
+                                        <div style={{ minWidth: 0 }}>
+                                            <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                #{s.azure_work_item_id ?? '—'} {s.user_story_title ?? ''}
+                                            </p>
+                                            <p style={{ margin: '2px 0 0', fontSize: 11, color: '#9ca3af' }}>
+                                                {s.created_at ? new Date(s.created_at).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}
+                                            </p>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      <span style={{
+                          fontSize: 12, fontWeight: 700,
+                          color: s.score >= 70 ? '#15803d' : s.score >= 50 ? '#b45309' : '#dc2626',
+                      }}>
+                        {s.score}%
+                      </span>
+                                            {s.code_quality !== null && (
+                                                <span style={{
+                                                    fontSize: 12, color: '#9ca3af',
+                                                }}>
+                          Q {s.code_quality}%
+                        </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

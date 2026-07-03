@@ -96,7 +96,7 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
         if (!token) return
         setLoading(true)
         try {
-            const qs = new URLSearchParams({ page: '1', limit: '100' })
+            const qs = new URLSearchParams({ page: '1', limit: '300' })
             if (teamFilter !== null) qs.set('team_id', String(teamFilter))
             const res = await fetch(`/api/user-stories?${qs.toString()}`, {
                 headers: { Authorization: `Bearer ${token}` },
