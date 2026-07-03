@@ -1,15 +1,25 @@
 import { getUserIdFromRequest } from '@/lib/getAuthUser'
 import { NextResponse } from 'next/server'
 
-// TODO: wire to the Render backend's history-delete endpoint once available.
+const BASE = 'https://tfc-userstories.onrender.com'
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = getUserIdFromRequest(request)
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const userId = getUserIdFromRequest(request)
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  await params
-  return NextResponse.json({ success: true })
+    const { id } = await params
+    const auth = request.headers.get('Authorization') ?? ''
+
+    const res = await fetch(`${BASE}/submissions/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: auth },
+    })
+    if (!res.ok) {
+        const err = await res.json().catch(() => null)
+        return NextResponse.json({ error: err?.detail ?? err?.message ?? res.statusText }, { status: res.status })
+    }
+    return NextResponse.json({ success: true })
 }
