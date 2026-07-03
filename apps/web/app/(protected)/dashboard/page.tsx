@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useHistory } from '../../_context/HistoryContext'
+import { useAuth } from '@/app/_context/AuthContext'
 import styles from './dashboard.module.css'
 
 const DEFAULT_PAGE_SIZE = 5
@@ -38,9 +39,11 @@ function qualityLabel(s: number) {
 
 export default function Page() {
     const { historyItems, loading, removeWorkItem, teams, teamFilter, setTeamFilter } = useHistory()
+    const { user } = useAuth()
 
     const [search, setSearch] = useState('')
     const [filterUnder50, setFilterUnder50] = useState(false)
+    const [onlyMine, setOnlyMine] = useState(false)
     const [dateFilter, setDateFilter] = useState('any')
     const [page, setPage] = useState(0)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
@@ -81,13 +84,14 @@ export default function Page() {
             if (!wid.toLowerCase().includes(q) && !latest.user_story_title.toLowerCase().includes(q)) return false
         }
         if (filterUnder50 && latest.score >= 50) return false
+        if (onlyMine && user && !historyItems.some(h => h.azure_work_item_id === wid && h.user_id === user.user_id)) return false
         if (cutoff && parseItemDate(latest.date, latest.time) < cutoff) return false
         return true
-    }), [rows, search, filterUnder50, cutoff])
+    }), [rows, search, filterUnder50, onlyMine, user, historyItems, cutoff])
 
     const totalPages = Math.ceil(filtered.length / pageSize)
     const pageItems = filtered.slice(page * pageSize, (page + 1) * pageSize)
-    const hasFilters = search || filterUnder50 || dateFilter !== 'any' || teamFilter !== null
+    const hasFilters = search || filterUnder50 || onlyMine || dateFilter !== 'any' || teamFilter !== null
 
     function resetPage() { setPage(0) }
 
@@ -187,6 +191,19 @@ export default function Page() {
                         <span style={{ fontSize: 13, color: filterUnder50 ? '#dc2626' : '#374151', fontWeight: filterUnder50 ? 600 : 400 }}>Under 50%</span>
                     </label>
 
+                    <label className={`${styles.filterSelect} ${styles.filterCheckboxLabel}`}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <input
+                            type="checkbox"
+                            className={styles.filterCheckbox}
+                            checked={onlyMine}
+                            onChange={e => { setOnlyMine(e.target.checked); resetPage() }}
+                        />
+                        <span style={{ fontSize: 13, color: onlyMine ? '#5236ab' : '#374151', fontWeight: onlyMine ? 600 : 400 }}>Only mine</span>
+                    </label>
+
                     <label className={styles.filterSelect}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
@@ -224,7 +241,7 @@ export default function Page() {
                     {hasFilters && (
                         <button
                             className={styles.clearBtn}
-                            onClick={() => { setSearch(''); setFilterUnder50(false); setDateFilter('any'); setTeamFilter(null); resetPage() }}
+                            onClick={() => { setSearch(''); setFilterUnder50(false); setOnlyMine(false); setDateFilter('any'); setTeamFilter(null); resetPage() }}
                         >
                             Clear filters
                         </button>
@@ -274,6 +291,12 @@ export default function Page() {
                         <span className={styles.dotGreen} />
                         Analyzed
                       </span>
+                                        {(latest.user_name || latest.team_name) && (
+                                            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+                                                {latest.user_name ?? 'Unknown user'}
+                                                {latest.team_name && <> · {latest.team_name}</>}
+                                            </div>
+                                        )}
                                     </td>
 
                                     <td className={styles.td}>
@@ -341,15 +364,6 @@ export default function Page() {
                                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                                                     </svg>
                                                     View
-                                                </Link>
-                                                <Link
-                                                    href={`/user-story?work_item_id=${wid}&evaluate=1`}
-                                                    className={`${styles.actionBtn} ${styles.actionBtnBlue}`}
-                                                >
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <polyline points="13 2 13 9 20 9" /><polygon points="22 12 18 8 2 8 2 20 22 20 22 12" />
-                                                    </svg>
-                                                    Analyse
                                                 </Link>
                                                 <button
                                                     className={styles.deleteIcon}

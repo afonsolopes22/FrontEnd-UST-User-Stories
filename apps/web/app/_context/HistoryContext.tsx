@@ -18,6 +18,10 @@ export type HistoryItem = {
     failed: string[]
     improvements: string[]
     notes: string[]
+    user_id: number | null
+    user_name: string | null
+    team_id: number | null
+    team_name: string | null
 }
 
 export type NewEvaluation = {
@@ -72,6 +76,10 @@ function mapRow(row: Record<string, unknown>): HistoryItem {
         failed: (row.failed as string[]) ?? [],
         improvements: (row.improvements as string[]) ?? [],
         notes: (row.best_practices_feedback as string[]) ?? [],
+        user_id: (row.user_id as number) ?? null,
+        user_name: (row.user_name as string) ?? null,
+        team_id: (row.team_id as number) ?? null,
+        team_name: (row.team_name as string) ?? null,
     }
 }
 
