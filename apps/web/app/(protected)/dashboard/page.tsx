@@ -38,13 +38,14 @@ function qualityLabel(s: number) {
 }
 
 export default function Page() {
-    const { historyItems, loading, removeWorkItem, teams, teamFilter, setTeamFilter } = useHistory()
+    const { historyItems, loading, removeWorkItem, removeHistoryItem, teams, teamFilter, setTeamFilter } = useHistory()
     const { user } = useAuth()
 
     const [search, setSearch] = useState('')
     const [filterUnder50, setFilterUnder50] = useState(false)
     const [onlyMine, setOnlyMine] = useState(false)
     const [dateFilter, setDateFilter] = useState('any')
+    const [viewMode, setViewMode] = useState<'items' | 'submissions'>('items')
     const [page, setPage] = useState(0)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
@@ -55,20 +56,42 @@ export default function Page() {
         [historyItems]
     )
 
-    const rows = useMemo(
-        () => workItemIds.map(wid => ({
+    // Table rows: grouped by work item (one row per story, showing its latest evaluation)
+    // or flattened by submission (one row per evaluation event, most recent first — the
+    // same work item can appear more than once).
+    const rows = useMemo(() => {
+        if (viewMode === 'submissions') {
+            const totalByWid = new Map<string, number>()
+            for (const h of historyItems) totalByWid.set(h.azure_work_item_id, (totalByWid.get(h.azure_work_item_id) ?? 0) + 1)
+            return historyItems.map(h => ({ wid: h.azure_work_item_id, latest: h, count: totalByWid.get(h.azure_work_item_id) ?? 1 }))
+        }
+        return workItemIds.map(wid => ({
             wid,
             latest: historyItems.find(h => h.azure_work_item_id === wid)!,
             count: historyItems.filter(h => h.azure_work_item_id === wid).length,
-        })),
-        [workItemIds, historyItems]
+        }))
+    }, [viewMode, workItemIds, historyItems])
+
+    function rowKey(row: { wid: string; latest: { id: string } }): string {
+        return viewMode === 'submissions' ? row.latest.id : row.wid
+    }
+
+    // Stats cards: always keyed by unique story (regardless of table view mode), but
+    // scoped to "only mine" vs the whole visible team so the KPIs can reflect either.
+    const statsSourceItems = useMemo(
+        () => (onlyMine && user ? historyItems.filter(h => h.user_id === user.user_id) : historyItems),
+        [historyItems, onlyMine, user]
     )
+    const statsRows = useMemo(() => {
+        const ids = [...new Set(statsSourceItems.map(i => i.azure_work_item_id))]
+        return ids.map(wid => ({ wid, latest: statsSourceItems.find(h => h.azure_work_item_id === wid)! }))
+    }, [statsSourceItems])
 
     // Stats
-    const avgScore = rows.length > 0
-        ? Math.round(rows.reduce((s, r) => s + r.latest.score, 0) / rows.length)
+    const avgScore = statsRows.length > 0
+        ? Math.round(statsRows.reduce((s, r) => s + r.latest.score, 0) / statsRows.length)
         : 0
-    const lowQualityCount = rows.filter(r => r.latest.score < 50).length
+    const lowQualityCount = statsRows.filter(r => r.latest.score < 50).length
 
     // Filtered rows
     const cutoff = useMemo(() => {
@@ -84,10 +107,15 @@ export default function Page() {
             if (!wid.toLowerCase().includes(q) && !latest.user_story_title.toLowerCase().includes(q)) return false
         }
         if (filterUnder50 && latest.score >= 50) return false
-        if (onlyMine && user && !historyItems.some(h => h.azure_work_item_id === wid && h.user_id === user.user_id)) return false
+        if (onlyMine && user) {
+            const belongsToMe = viewMode === 'submissions'
+                ? latest.user_id === user.user_id
+                : historyItems.some(h => h.azure_work_item_id === wid && h.user_id === user.user_id)
+            if (!belongsToMe) return false
+        }
         if (cutoff && parseItemDate(latest.date, latest.time) < cutoff) return false
         return true
-    }), [rows, search, filterUnder50, onlyMine, user, historyItems, cutoff])
+    }), [rows, search, filterUnder50, onlyMine, user, viewMode, historyItems, cutoff])
 
     const totalPages = Math.ceil(filtered.length / pageSize)
     const pageItems = filtered.slice(page * pageSize, (page + 1) * pageSize)
@@ -105,6 +133,33 @@ export default function Page() {
             </div>
 
             {/* Stats cards */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          Showing stats for:
+        </span>
+                <button
+                    onClick={() => setOnlyMine(false)}
+                    style={{
+                        fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, cursor: 'pointer',
+                        border: '1px solid ' + (!onlyMine ? '#5236ab' : '#e5e7eb'),
+                        background: !onlyMine ? '#ede9fe' : '#fff',
+                        color: !onlyMine ? '#5236ab' : '#6b7280',
+                    }}
+                >
+                    Whole team
+                </button>
+                <button
+                    onClick={() => setOnlyMine(true)}
+                    style={{
+                        fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, cursor: 'pointer',
+                        border: '1px solid ' + (onlyMine ? '#5236ab' : '#e5e7eb'),
+                        background: onlyMine ? '#ede9fe' : '#fff',
+                        color: onlyMine ? '#5236ab' : '#6b7280',
+                    }}
+                >
+                    Only me
+                </button>
+            </div>
             <div className={styles.statsRow}>
                 <div className={styles.statCard} data-tooltip="Total number of unique user stories evaluated in the platform.">
                     <div className={styles.statIconRow}>
@@ -117,7 +172,7 @@ export default function Page() {
                         </svg>
                     </div>
                     <p className={styles.statLabel}>Total Stories</p>
-                    <p className={styles.statValue}>{rows.length}</p>
+                    <p className={styles.statValue}>{statsRows.length}</p>
                     <p className={styles.statMeta}>All time</p>
                 </div>
 
@@ -129,7 +184,7 @@ export default function Page() {
                         </svg>
                     </div>
                     <p className={styles.statLabel}>Analyzed Stories</p>
-                    <p className={styles.statValue}>{rows.length}</p>
+                    <p className={styles.statValue}>{statsRows.length}</p>
                     <p className={styles.statMetaGreen}>100% of total</p>
                 </div>
 
@@ -217,6 +272,22 @@ export default function Page() {
                         </select>
                     </label>
 
+                    <label className={styles.filterSelect} title="By story: one row per work item, showing its latest evaluation. By submission: one row per evaluation event, most recent first — the same work item can appear more than once.">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+                            <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                        </svg>
+                        <span className={styles.filterLabel}>View:</span>
+                        <select
+                            className={styles.filterSelectEl}
+                            value={viewMode}
+                            onChange={e => { setViewMode(e.target.value as 'items' | 'submissions'); resetPage() }}
+                        >
+                            <option value="items">By story (latest only)</option>
+                            <option value="submissions">By submission (time)</option>
+                        </select>
+                    </label>
+
                     {teams.length > 0 && (
                         <label className={styles.filterSelect} title="Which team's history to show. Scope (team / project / organization) is set by your admin in Settings.">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -264,7 +335,7 @@ export default function Page() {
                             <tr>
                                 <th className={styles.th}>ID</th>
                                 <th className={styles.th}>TITLE</th>
-                                <th className={styles.th}>LAST EVALUATION</th>
+                                <th className={styles.th}>{viewMode === 'submissions' ? 'EVALUATED' : 'LAST EVALUATION'}</th>
                                 <th className={styles.th}>SCORE</th>
                                 <th className={styles.th}>QUALITY</th>
                                 <th className={styles.th}>HISTORY</th>
@@ -273,7 +344,7 @@ export default function Page() {
                             </thead>
                             <tbody>
                             {pageItems.map(({ wid, latest, count }) => (
-                                <tr key={wid} className={styles.row}>
+                                <tr key={rowKey({ wid, latest })} className={styles.row}>
                                     <td className={styles.td}>
                                         <span className={styles.idBadge}>#{wid}</span>
                                     </td>
@@ -341,12 +412,18 @@ export default function Page() {
                                     </td>
 
                                     <td className={styles.td}>
-                                        {confirmDeleteId === wid ? (
+                                        {confirmDeleteId === rowKey({ wid, latest }) ? (
                                             <div className={styles.confirmRow}>
-                                                <span className={styles.confirmLabel}>Delete all?</span>
+                          <span className={styles.confirmLabel}>
+                            {viewMode === 'submissions' ? 'Delete?' : 'Delete all?'}
+                          </span>
                                                 <button
                                                     className={styles.confirmYes}
-                                                    onClick={() => { removeWorkItem(wid); setConfirmDeleteId(null) }}
+                                                    onClick={() => {
+                                                        if (viewMode === 'submissions') removeHistoryItem(latest.id)
+                                                        else removeWorkItem(wid)
+                                                        setConfirmDeleteId(null)
+                                                    }}
                                                 >
                                                     Yes
                                                 </button>
@@ -367,8 +444,8 @@ export default function Page() {
                                                 </Link>
                                                 <button
                                                     className={styles.deleteIcon}
-                                                    onClick={() => setConfirmDeleteId(wid)}
-                                                    title="Delete all submissions"
+                                                    onClick={() => setConfirmDeleteId(rowKey({ wid, latest }))}
+                                                    title={viewMode === 'submissions' ? 'Delete this submission' : 'Delete all submissions'}
                                                 >
                                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                         <polyline points="3 6 5 6 21 6" />
@@ -389,7 +466,7 @@ export default function Page() {
                     {/* Bottom: info + pagination */}
                     <div className={styles.bottomRow}>
             <span className={styles.pageInfo}>
-              {filtered.length === 0 ? '0' : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)}`} of {filtered.length} stories
+              {filtered.length === 0 ? '0' : `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, filtered.length)}`} of {filtered.length} {viewMode === 'submissions' ? 'submissions' : 'stories'}
             </span>
 
                         {totalPages > 1 && (
