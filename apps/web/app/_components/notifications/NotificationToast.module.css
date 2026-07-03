@@ -1,0 +1,40 @@
+.toastStack {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
+
+.toastCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #200a58;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  animation: slideIn 0.18s ease-out;
+}
+
+.toastCard svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #c4b5fd;
+}
+
+.toastMessage {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(16px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

@@ -1,0 +1,232 @@
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.pageHeader {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-family: monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 0.375rem;
+}
+
+.subtitle {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.statsChip {
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #5236ab;
+  border: 1px solid #c4b5fd;
+}
+
+.loadingMsg {
+  font-family: monospace;
+  font-size: 0.875rem;
+  color: #6b7280;
+  padding: 2rem 1.5rem;
+}
+
+.errorMsg {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 0.5rem 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Grid ──────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Card ──────────────────────────────────────────── */
+.card {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.125rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: box-shadow 0.15s;
+}
+
+.card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.unlocked {
+  border-left-width: 4px;
+}
+
+.locked {
+  opacity: 0.55;
+  filter: grayscale(0.6);
+}
+
+.lockOverlay {
+  position: absolute;
+  top: 0.875rem;
+  right: 0.875rem;
+  color: #9ca3af;
+}
+
+/* ── Card header ───────────────────────────────────── */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.equippedPill {
+  font-family: monospace;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+/* ── Description ───────────────────────────────────── */
+.description {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Requirement ───────────────────────────────────── */
+.requirementRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.requirementLabel {
+  font-family: monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.requirementText {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+/* ── Progress ──────────────────────────────────────── */
+.progressArea {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 6px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.progressLabel {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  min-width: 32px;
+  text-align: right;
+}
+
+.progressSep {
+  color: #9ca3af;
+  margin: 0 1px;
+}
+
+/* ── Equip button ──────────────────────────────────── */
+.equipBtn {
+  align-self: flex-start;
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid #5236ab;
+  background: #5236ab;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.12s, opacity 0.12s;
+  margin-top: 0.25rem;
+}
+
+.equipBtn:hover:not(:disabled) {
+  background: #3d2880;
+  border-color: #3d2880;
+}
+
+.equipBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.equipBtnActive {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #15803d;
+}
+
+.equipBtnActive:disabled {
+  opacity: 1;
+}

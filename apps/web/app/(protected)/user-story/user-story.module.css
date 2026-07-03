@@ -1,0 +1,371 @@
+.page {
+  padding: 2rem;
+  max-width: 720px;
+  margin: 0 auto;
+  font-family: monospace;
+}
+
+/* Streaming status */
+.streamStatus {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.04em;
+}
+
+.streamError {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 0.5rem;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cursor {
+  animation: blink 1s step-end infinite;
+  border-right: 2px solid #5236ab;
+  margin-left: 1px;
+}
+
+/* Skeleton pulse */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.skeletonRing {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  animation: pulse 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.skeletonSummary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 0.5rem;
+  justify-content: center;
+}
+
+.skeletonLine {
+  height: 10px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.skeletonCard {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  animation: pulse 1.4s ease-in-out infinite;
+  min-height: 80px;
+}
+
+/* Header */
+.headerMeta {
+  margin: 4px 0 0;
+  color: #888;
+  font-size: 12px;
+}
+
+.workItemId {
+  color: #5236ab;
+}
+
+/* Score card */
+.scoreCard {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.scoreSummary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding-left: 0.5rem;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #444;
+  margin: 0;
+}
+
+/* Criteria grid */
+.criteriaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.criteriaCardGreen {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.criteriaCardOrange {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.criteriaHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.75rem;
+  font-size: 16px;
+}
+
+.criteriaLabelGreen {
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  color: #15803d;
+}
+
+.criteriaLabelOrange {
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  color: #c2410c;
+}
+
+.criteriaListGreen {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+  font-size: 12px;
+  color: #166534;
+}
+
+.criteriaListOrange {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+  font-size: 12px;
+  color: #9a3412;
+}
+
+.criteriaItem {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.criteriaEmpty {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+}
+
+/* Improvements */
+.improvementsCard {
+  background: #ede9f8;
+  border: 1px solid #cbc3e6;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.improvementsLabel {
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  color: #5236ab;
+}
+
+.improvementsList {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+  font-size: 12px;
+  color: #200a58;
+}
+
+/* History section */
+.historySection {
+  border-top: 2px solid #000;
+  padding-top: 1rem;
+}
+
+.historyHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.historyTitle {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.histPagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.histPageInfo {
+  font-size: 11px;
+  color: #888;
+}
+
+.histPageBtns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.histPageBtn {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  font-family: monospace;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.histPageBtn:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.histPageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.histPageBtnActive {
+  background: #ede9f8;
+  border-color: #cbc3e6;
+  color: #5236ab;
+  font-weight: 700;
+}
+
+.histPageBtnActive:hover {
+  background: #d8d1f0 !important;
+}
+
+.histPageEllipsis {
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 0 2px;
+}
+
+.historyTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.historyTh {
+  text-align: left;
+  padding: 6px 16px 6px 0;
+  border-bottom: 1px solid #000;
+}
+
+.historyThLast {
+  text-align: left;
+  padding: 6px 0;
+  border-bottom: 1px solid #000;
+}
+
+.historyRow {
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.historyTd {
+  padding: 8px 16px 8px 0;
+}
+
+.historyTdLast {
+  padding: 8px 0;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContent {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  max-width: 640px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-family: monospace;
+}
+
+.modalBack {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 13px;
+  color: #555;
+  padding: 0;
+  margin-bottom: 1.25rem;
+}
+
+.modalMeta {
+  margin: 0 0 1rem;
+  font-size: 12px;
+  color: #888;
+}
+
+.modalScoreCard {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-radius: 10px;
+  border: 1px solid #eee;
+}
+
+.modalCriteriaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}

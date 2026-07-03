@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(npx tsc *)",
+      "Bash(node_modules/.bin/tsc --noEmit -p tsconfig.json)",
+      "Bash(where node *)",
+      "Bash(where npm *)",
+      "Bash(find app *)",
+      "Bash(find . -maxdepth 2 -iname \"globals.css\")"
+    ]
+  }
+}

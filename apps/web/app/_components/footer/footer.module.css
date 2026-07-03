@@ -1,0 +1,8 @@
+.container {
+    left: 0;
+    width: 100%;
+    background: #200a58;
+    color: rgba(255, 255, 255, 0.75);
+    padding: 15px;
+    text-align: center;
+}

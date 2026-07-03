@@ -1,0 +1,246 @@
+/* ── Page wrapper ────────────────────────────────────────────────────────── */
+.container {
+  min-height: calc(100vh - 100px);
+  background: #e6e3f3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* ── Hero section (icon + title + subtitle) ──────────────────────────────── */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.iconWrap {
+  width: 64px;
+  height: 64px;
+  background: #e0e9ff;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  max-width: 360px;
+  line-height: 1.6;
+}
+
+/* ── Org pills row ───────────────────────────────────────────────────────── */
+.orgRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.orgPill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 99px;
+  padding: 5px 14px 5px 10px;
+  font-size: 13px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.orgDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px #bbf7d0;
+  flex-shrink: 0;
+}
+
+.orgPillLabel {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.orgPillValue {
+  color: #111;
+  font-weight: 600;
+}
+
+/* ── Org pill skeleton ───────────────────────────────────────────────────── */
+.orgPillSkeleton {
+  width: 140px;
+  height: 34px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Main card ───────────────────────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 560px;
+  padding: 2rem 2rem 1.75rem;
+}
+
+/* ── Input group ─────────────────────────────────────────────────────────── */
+.fieldLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 8px;
+}
+
+.inputWrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f9fafb;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.inputWrap:focus-within {
+  border-color: #5236ab;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(82, 54, 171, 0.12);
+}
+
+.inputWrapError {
+  border-color: #ef4444;
+}
+
+.inputWrapError:focus-within {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.inputPrefix {
+  padding: 0 10px 0 14px;
+  font-size: 15px;
+  color: #9ca3af;
+  font-family: monospace;
+  user-select: none;
+  line-height: 1;
+}
+
+.input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 11px 14px 11px 0;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+}
+
+.input::placeholder {
+  color: #c4c9d4;
+}
+
+.fieldError {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #ef4444;
+}
+
+/* ── Submit button ───────────────────────────────────────────────────────── */
+.submitBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: 13px 20px;
+  background: #5236ab;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #200a58;
+}
+
+.submitBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── No org warning ──────────────────────────────────────────────────────── */
+.noOrgBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff7ed;
+  border: 1px dashed #fdba74;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 560px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.noOrgBanner:hover {
+  background: #ffedd5;
+}
+
+.noOrgTitle {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c2410c;
+}
+
+.noOrgDesc {
+  margin: 0;
+  font-size: 12px;
+  color: #9a3412;
+}
+
+/* ── Security note ───────────────────────────────────────────────────────── */
+.securityNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1.25rem;
+  font-size: 12px;
+  color: #9ca3af;
+}
