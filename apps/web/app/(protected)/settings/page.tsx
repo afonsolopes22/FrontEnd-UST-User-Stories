@@ -28,6 +28,7 @@ type Team = {
     name: string
     project_id: number
     history_visibility?: 'team' | 'project' | 'organization'
+    created_by_user_id?: number | null
 }
 
 type BestPractice = {
@@ -286,6 +287,13 @@ export default function SettingsPage() {
     const [deletingMember, setDeletingMember] = useState<{ teamId: number; userId: number } | null>(null)
     const [savingVisibility, setSavingVisibility] = useState<number | null>(null)
     const [visibilityError, setVisibilityError] = useState<Record<number, string | null>>({})
+
+    // Create-team form available directly in the Teams tab (not just nested under a project)
+    const [showGlobalTeamForm, setShowGlobalTeamForm] = useState(false)
+    const [globalTeamProjectId, setGlobalTeamProjectId] = useState<number | null>(null)
+    const [globalTeamName, setGlobalTeamName] = useState('')
+    const [savingGlobalTeam, setSavingGlobalTeam] = useState(false)
+    const [globalTeamError, setGlobalTeamError] = useState<string | null>(null)
 
     // PAT reveal state
     const [showRevealForm, setShowRevealForm] = useState(false)
@@ -625,6 +633,36 @@ export default function SettingsPage() {
         }
     }
 
+    async function handleCreateTeamGlobal() {
+        if (!globalTeamProjectId) { setGlobalTeamError('Choose a project.'); return }
+        if (!globalTeamName.trim()) { setGlobalTeamError('Team name is required.'); return }
+        setSavingGlobalTeam(true)
+        setGlobalTeamError(null)
+        try {
+            const res = await fetch(`/api/projects/${globalTeamProjectId}/teams`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ name: globalTeamName.trim(), organization_id: user!.organization_id }),
+            })
+            const data = await res.json()
+            if (!res.ok) {
+                setGlobalTeamError(data.error || data.detail || `Failed (${res.status}).`)
+                return
+            }
+            const pid = globalTeamProjectId
+            setAllTeams(prev => ({ ...prev, [pid]: [...(prev[pid] ?? []), data] }))
+            setProjectTeams(prev => ({ ...prev, [pid]: [...(prev[pid] ?? []), data] }))
+            setGlobalTeamName('')
+            setGlobalTeamProjectId(null)
+            setShowGlobalTeamForm(false)
+            refreshNotifications()
+        } catch {
+            setGlobalTeamError('Unexpected error.')
+        } finally {
+            setSavingGlobalTeam(false)
+        }
+    }
+
     function navigateToTeam(team: Team) {
         setActiveSection('teams')
         setExpandedTeamId(team.id)
@@ -897,8 +935,16 @@ export default function SettingsPage() {
                     <span style={{ color: '#374151' }}>
                       {m.name && <strong style={{ marginRight: 6 }}>{m.name}</strong>}
                         <span style={{ color: '#6b7280' }}>{m.email}</span>
+                        {team.created_by_user_id === m.user_id && (
+                            <span style={{
+                                marginLeft: 8, fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 999,
+                                background: '#ede9fe', color: '#5236ab', textTransform: 'uppercase', letterSpacing: '0.03em',
+                            }}>
+                          Owner
+                        </span>
+                        )}
                     </span>
-                                        {role === 'admin' && (
+                                        {role === 'admin' && team.created_by_user_id !== m.user_id && (
                                             <button
                                                 onClick={() => handleDeleteMember(team.id, m.user_id)}
                                                 disabled={deletingMember?.teamId === team.id && deletingMember?.userId === m.user_id}
@@ -1443,15 +1489,68 @@ export default function SettingsPage() {
                 ) : activeSection === 'teams' ? (
                     <div className={styles.contentArea} style={{ gridTemplateColumns: '1fr' }}>
                         <div className={styles.formCard}>
-                            <h2 className={styles.formTitle}>Teams</h2>
-                            <p className={styles.formSubtitle}>Browse teams and manage their members.</p>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                                <div>
+                                    <h2 className={styles.formTitle}>Teams</h2>
+                                    <p className={styles.formSubtitle}>Browse teams and manage their members.</p>
+                                </div>
+                                {role === 'admin' && allProjects.length > 0 && (
+                                    <button
+                                        className={styles.saveBtn}
+                                        style={{ marginTop: 0 }}
+                                        onClick={() => setShowGlobalTeamForm(v => !v)}
+                                    >
+                                        {showGlobalTeamForm ? 'Cancel' : '+ New Team'}
+                                    </button>
+                                )}
+                            </div>
+
+                            {showGlobalTeamForm && (
+                                <div style={{
+                                    display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap',
+                                    marginTop: 12, padding: 12, borderRadius: 8, background: '#f9fafb', border: '1px solid #eee',
+                                }}>
+                                    <select
+                                        value={globalTeamProjectId ?? ''}
+                                        onChange={e => setGlobalTeamProjectId(e.target.value ? Number(e.target.value) : null)}
+                                        className={styles.fieldInput}
+                                        style={{ fontSize: 12, padding: '6px 8px', minWidth: 160 }}
+                                    >
+                                        <option value="">Choose a project…</option>
+                                        {allProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                    </select>
+                                    <input
+                                        type="text"
+                                        placeholder="Team name"
+                                        value={globalTeamName}
+                                        onChange={e => setGlobalTeamName(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && handleCreateTeamGlobal()}
+                                        className={styles.fieldInput}
+                                        style={{ flex: 1, minWidth: 160, fontSize: 12, padding: '6px 10px' }}
+                                    />
+                                    <button
+                                        className={styles.saveBtn}
+                                        style={{ marginTop: 0, padding: '6px 14px', fontSize: 12 }}
+                                        onClick={handleCreateTeamGlobal}
+                                        disabled={savingGlobalTeam}
+                                    >
+                                        {savingGlobalTeam ? 'Creating…' : 'Create'}
+                                    </button>
+                                    {globalTeamError && (
+                                        <p className={styles.saveError} style={{ width: '100%', margin: 0, fontSize: 12 }}>{globalTeamError}</p>
+                                    )}
+                                    <p style={{ width: '100%', margin: 0, fontSize: 11, color: '#9ca3af' }}>
+                                        You&apos;ll automatically become a member of the new team — and can&apos;t be removed from it later.
+                                    </p>
+                                </div>
+                            )}
 
                             {loadingAllTeams ? (
                                 <p className={styles.placeholderDesc} style={{ marginTop: '1rem' }}>Loading teams…</p>
                             ) : !user?.organization_id ? (
                                 <p className={styles.placeholderDesc} style={{ marginTop: '1rem' }}>Set up an organization first.</p>
                             ) : allProjects.length === 0 ? (
-                                <p className={styles.placeholderDesc} style={{ marginTop: '1rem' }}>No projects or teams yet.</p>
+                                <p className={styles.placeholderDesc} style={{ marginTop: '1rem' }}>No projects yet — create one in the Projects tab first.</p>
                             ) : (
                                 <div style={{ marginTop: '1rem' }}>
                                     {allProjects.map(project => {
@@ -1475,7 +1574,9 @@ export default function SettingsPage() {
                                         )
                                     })}
                                     {allProjects.every(p => (allTeams[p.id] ?? []).length === 0) && (
-                                        <p className={styles.placeholderDesc}>No teams yet. Create teams from the Projects tab.</p>
+                                        <p className={styles.placeholderDesc}>
+                                            {role === 'admin' ? 'No teams yet. Use "+ New Team" above to create one.' : 'No teams yet.'}
+                                        </p>
                                     )}
                                 </div>
                             )}
