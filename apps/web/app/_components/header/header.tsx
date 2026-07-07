@@ -4,17 +4,19 @@ import { useAuth } from "@/app/_context/AuthContext"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
+import { Search, LayoutGrid, Trophy, Settings as SettingsIcon, Bell, HelpCircle } from "lucide-react"
 import styles from '@/app/_components/header/header.module.css'
+import { PearlNavButton } from '@/app/_components/header/PearlNavButton'
 import { useAchievements } from '@/app/_context/AchievementsContext'
 import { useNotifications } from '@/app/_context/NotificationsContext'
 
 const NAV_LINKS = [
-    { href: '/analyze', label: 'Analyse' },
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/achievements', label: 'Achievements' },
-    { href: '/settings', label: 'Settings' },
-    { href: '/notifications', label: 'Notifications' },
-    { href: '/faq', label: 'FAQs' },
+    { href: '/analyze', label: 'Analyse', icon: Search },
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
+    { href: '/achievements', label: 'Achievements', icon: Trophy },
+    { href: '/settings', label: 'Settings', icon: SettingsIcon },
+    { href: '/notifications', label: 'Notifications', icon: Bell },
+    { href: '/faq', label: 'FAQs', icon: HelpCircle },
 ]
 
 function UserArea({ name, role }: { name: string; role: string }) {
@@ -73,17 +75,22 @@ export default function Header() {
             </Link>
 
             <nav aria-label="Navegação principal">
-                <ul className={styles.navlist}>
-                    {NAV_LINKS.filter(({ href }) => !(hideAchievements && href === '/achievements')).map(({ href, label }) => {
+                <ul className={styles.pearlNav}>
+                    {NAV_LINKS.filter(({ href }) => !(hideAchievements && href === '/achievements')).map(({ href, label, icon }) => {
                         const active = pathname.startsWith(href)
                         return (
                             <li key={href}>
-                                <Link href={href} className={`${styles.navlink} ${active ? styles.active : ''}`}>
-                                    {label}
-                                    {href === '/notifications' && unreadCount > 0 && (
-                                        <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
-                                    )}
-                                </Link>
+                                <PearlNavButton
+                                    href={href}
+                                    label={label}
+                                    icon={icon}
+                                    active={active}
+                                    badge={href === '/notifications' && unreadCount > 0 ? (
+                                        <span className={styles.notificationBadge} style={{ position: 'absolute', top: -4, right: -4 }}>
+                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                        </span>
+                                    ) : undefined}
+                                />
                             </li>
                         )
                     })}

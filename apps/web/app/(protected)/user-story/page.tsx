@@ -27,8 +27,8 @@ function SubmissionModal({ sub, onClose }: { sub: HistoryItem; onClose: () => vo
                 <p className={styles.modalMeta}>Submitted on {sub.date} at {sub.time}</p>
 
                 <div className={styles.modalScoreCard}>
-                    <ScoreRing value={sub.score} label="Score" color="#1d4ed8" />
-                    <ScoreRing value={sub.code_quality} label="Code Quality" color="#059669" />
+                    <ScoreRing value={sub.score} label="Score" />
+                    <ScoreRing value={sub.code_quality} label="Code Quality" />
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingLeft: '0.5rem' }}>
                         <p style={{ fontSize: '12px', lineHeight: '1.65', color: '#444', margin: 0 }}>{sub.summary}</p>
                     </div>
@@ -69,6 +69,18 @@ function SubmissionModal({ sub, onClose }: { sub: HistoryItem; onClose: () => vo
                         </div>
                         <ul className={styles.improvementsList}>
                             {sub.improvements.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
+                        </ul>
+                    </div>
+                )}
+
+                {sub.notes.length > 0 && (
+                    <div className={styles.improvementsCard} style={{ borderLeftColor: '#0ea5e9' }}>
+                        <div className={styles.criteriaHeader}>
+                            <span style={{ color: '#0369a1' }}>★</span>
+                            <span className={styles.improvementsLabel} style={{ color: '#0369a1' }}>BEST PRACTICES</span>
+                        </div>
+                        <ul className={styles.improvementsList}>
+                            {sub.notes.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
                         </ul>
                     </div>
                 )}
@@ -216,8 +228,8 @@ function WorkItemDetail() {
                 </div>
 
                 <div className={styles.scoreCard}>
-                    <ScoreRing value={r.score} label="Score" color="#1d4ed8" />
-                    <ScoreRing value={r.code_quality} label="Code Quality" color="#059669" />
+                    <ScoreRing value={r.score} label="Score" />
+                    <ScoreRing value={r.code_quality} label="Code Quality" />
                     <p className={styles.scoreSummary}>{r.summary}</p>
                 </div>
 
@@ -302,8 +314,8 @@ function WorkItemDetail() {
             </div>
 
             <div className={styles.scoreCard}>
-                <ScoreRing value={latest.score} label="Score" color="#1d4ed8" />
-                <ScoreRing value={latest.code_quality} label="Code Quality" color="#059669" />
+                <ScoreRing value={latest.score} label="Score" />
+                <ScoreRing value={latest.code_quality} label="Code Quality" />
                 <p className={styles.scoreSummary}>{latest.summary}</p>
             </div>
 
@@ -343,6 +355,18 @@ function WorkItemDetail() {
                     </div>
                     <ul className={styles.improvementsList}>
                         {latest.improvements.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
+                    </ul>
+                </div>
+            )}
+
+            {latest.notes.length > 0 && (
+                <div className={styles.improvementsCard} style={{ borderLeftColor: '#0ea5e9' }}>
+                    <div className={styles.criteriaHeader}>
+                        <span style={{ color: '#0369a1' }}>★</span>
+                        <span className={styles.improvementsLabel} style={{ color: '#0369a1' }}>BEST PRACTICES</span>
+                    </div>
+                    <ul className={styles.improvementsList}>
+                        {latest.notes.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
                     </ul>
                 </div>
             )}
