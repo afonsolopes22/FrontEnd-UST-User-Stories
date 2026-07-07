@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/_context/AuthContext'
 import styles from '@/app/(protected)/analyze/analyze.module.css'
@@ -29,6 +29,8 @@ export default function Page() {
     const [loadingWorkItems, setLoadingWorkItems] = useState(false)
     const [workItemsTruncated, setWorkItemsTruncated] = useState(false)
     const [showSuggestions, setShowSuggestions] = useState(false)
+    const suggestionsWrapRef = useRef<HTMLDivElement>(null)
+    const [suggestionsMaxHeight, setSuggestionsMaxHeight] = useState(280)
 
     // Read org from localStorage — no API call needed
     useEffect(() => {
@@ -103,6 +105,23 @@ export default function Page() {
             .filter(item => String(item.id).includes(query))
             .slice(0, SUGGESTIONS_FILTERED_LIMIT)
     })()
+
+    // Keep the suggestions list from ever pushing the page taller: cap its height to
+    // whatever room is actually left below it in the viewport, so it scrolls internally
+    // instead of extending/shifting the page layout.
+    useEffect(() => {
+        if (!showSuggestions) return
+        const recalc = () => {
+            const el = suggestionsWrapRef.current
+            if (!el) return
+            const bottom = el.getBoundingClientRect().bottom
+            const available = window.innerHeight - bottom - 16
+            setSuggestionsMaxHeight(Math.max(120, Math.min(280, available)))
+        }
+        recalc()
+        window.addEventListener('resize', recalc)
+        return () => window.removeEventListener('resize', recalc)
+    }, [showSuggestions])
 
     function handleSubmit() {
         const errs = { workItemId: !workItemId.trim(), project: !selectedProjectId }
@@ -215,7 +234,7 @@ export default function Page() {
 
                 {/* Work Item ID */}
                 <label className={styles.fieldLabel} style={{ marginTop: '1.25rem' }}>Work Item ID</label>
-                <div style={{ position: 'relative' }}>
+                <div ref={suggestionsWrapRef} style={{ position: 'relative' }}>
                     <div className={`${styles.inputWrap} ${errors.workItemId ? styles.inputWrapError : ''}`}>
                         <span className={styles.inputPrefix}>#</span>
                         <input
@@ -246,7 +265,7 @@ export default function Page() {
                             style={{
                                 position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4,
                                 background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10,
-                                boxShadow: '0 8px 24px rgba(0,0,0,0.12)', maxHeight: 280, overflowY: 'auto', zIndex: 20,
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.12)', maxHeight: suggestionsMaxHeight, overflowY: 'auto', zIndex: 20,
                             }}
                         >
                             {!workItemId.trim() && workItemsTruncated && (
