@@ -14,7 +14,8 @@
       "Bash(npm install *)",
       "PowerShell(Get-Command node,npm -ErrorAction SilentlyContinue; where.exe node 2>$null; where.exe npm 2>$null; Get-ChildItem \"$env:ProgramFiles\\\\nodejs\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:APPDATA\\\\npm\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:LOCALAPPDATA\\\\nvm\" -ErrorAction SilentlyContinue)",
       "Bash(xargs grep -l \"node\")",
-      "WebFetch(domain:21st.dev)"
+      "WebFetch(domain:21st.dev)",
+      "Bash(git credential *)"
     ]
   }
 }

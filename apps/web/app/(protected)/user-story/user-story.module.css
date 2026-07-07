@@ -36,6 +36,8 @@
 /* Score card */
 .scoreCard {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 2rem;
   margin-bottom: 1.5rem;
   padding: 1.25rem;
@@ -45,7 +47,8 @@
 }
 
 .scoreSummary {
-  flex: 1;
+  flex: 0 1 auto;
+  max-width: 420px;
   display: flex;
   align-items: center;
   padding-left: 0.5rem;
