@@ -23,8 +23,8 @@ function SubmissionModal({ sub, onClose }: { sub: HistoryItem; onClose: () => vo
                 <p className={styles.modalMeta}>Submitted on {sub.date} at {sub.time}</p>
 
                 <div className={styles.modalScoreCard}>
-                    <ScoreRing value={sub.score} label="Score" color="#1d4ed8" />
-                    <ScoreRing value={sub.code_quality} label="Code Quality" color="#059669" />
+                    <ScoreRing value={sub.score} label="Score" />
+                    <ScoreRing value={sub.code_quality} label="Code Quality" />
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingLeft: '0.5rem' }}>
                         <p style={{ fontSize: '12px', lineHeight: '1.65', color: '#444', margin: 0 }}>{sub.summary}</p>
                     </div>
@@ -54,6 +54,15 @@ function SubmissionModal({ sub, onClose }: { sub: HistoryItem; onClose: () => vo
                         <div className={styles.improvementsLabel}>→ IMPROVEMENTS</div>
                         <ul className={styles.improvementsList}>
                             {sub.improvements.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
+                        </ul>
+                    </div>
+                )}
+
+                {sub.notes.length > 0 && (
+                    <div className={styles.improvementsCard} style={{ borderLeftColor: '#0ea5e9' }}>
+                        <div className={styles.improvementsLabel} style={{ color: '#0369a1' }}>★ BEST PRACTICES</div>
+                        <ul className={styles.improvementsList}>
+                            {sub.notes.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
                         </ul>
                     </div>
                 )}
