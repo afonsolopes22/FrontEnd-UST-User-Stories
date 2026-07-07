@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useHistory, HistoryItem } from '../../_context/HistoryContext'
 import { useAuth } from '@/app/_context/AuthContext'
 import { CoreSpinLoader } from '@/components/ui/core-spin-loader'
+import { ScoreRing } from '@/components/ui/score-ring'
 import styles from './user-story.module.css'
 
 const EVALUATE_URL = 'https://tfc-userstories.onrender.com/evaluate/azure/sync'
@@ -16,35 +17,6 @@ function scoreColor(v: number) {
 }
 
 // ── Components ────────────────────────────────────────────────────────────────
-
-function ScoreRing({ value, label, color }: { value: number; label: string; color: string }) {
-    const r = 36
-    const circ = 2 * Math.PI * r
-    const offset = circ * (1 - value / 100)
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-            <svg width="88" height="88" viewBox="0 0 88 88">
-                <circle cx="44" cy="44" r={r} fill="none" stroke="#f0f0f0" strokeWidth="8" />
-                <circle
-                    cx="44" cy="44" r={r} fill="none"
-                    stroke={color} strokeWidth="8"
-                    strokeDasharray={circ}
-                    strokeDashoffset={offset}
-                    strokeLinecap="round"
-                    transform="rotate(-90 44 44)"
-                    style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-                />
-                <text x="44" y="44" textAnchor="middle" dominantBaseline="central"
-                      style={{ fontSize: '16px', fontWeight: 'bold', fontFamily: 'monospace', fill: '#111' }}>
-                    {value}%
-                </text>
-            </svg>
-            <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#888', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-        {label}
-      </span>
-        </div>
-    )
-}
 
 function SubmissionModal({ sub, onClose }: { sub: HistoryItem; onClose: () => void }) {
     return (
