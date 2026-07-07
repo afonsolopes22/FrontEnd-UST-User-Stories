@@ -1,12 +1,23 @@
 'use client'
 
 import { useEffect, useState, FormEvent } from "react"
+import { motion, type Variants } from "framer-motion"
 import { useAuth, AuthUser } from "@/app/_context/AuthContext"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import PasswordStrengthMeter, { getFailedRequirements } from "@/app/_components/passwordStrength/PasswordStrengthMeter"
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+}
+
+const staggerContainer: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } },
+}
 
 const API_BASE = 'https://tfc-userstories.onrender.com'
 
@@ -278,24 +289,44 @@ function LandingPage() {
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-slate-50 to-white">
       <div className="flex flex-col items-center justify-center flex-1 gap-3 px-6 pt-4 pb-2 text-center">
-        <div className="flex items-center gap-3 mb-2">
+        <motion.div
+          className="flex items-center gap-3 mb-2"
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+        >
           <DevLensLogo />
           <span className="text-4xl font-bold tracking-tight text-slate-900">DevLens</span>
-        </div>
+        </motion.div>
 
-        <p className="text-lg text-slate-500 max-w-md leading-relaxed">
+        <motion.p
+          className="text-lg text-slate-500 max-w-md leading-relaxed"
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          transition={{ delay: 0.08 }}
+        >
           Analyze user stories and code to ensure<br />
           high-quality implementation and best practices.
-        </p>
+        </motion.p>
 
         {/* Auth card */}
-        <div className="mt-1 w-full max-w-sm mb-1">
+        <motion.div
+          className="mt-1 w-full max-w-sm mb-1"
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          transition={{ delay: 0.16 }}
+        >
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
             {/* Tab switcher */}
             <div className="flex rounded-lg overflow-hidden border border-slate-200 mb-5">
-              <button
+              <motion.button
                 type="button"
                 onClick={() => setActiveTab('login')}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
                 className={`flex-1 py-2 text-sm font-semibold transition-colors ${
                   activeTab === 'login'
                     ? 'bg-[#5236ab] text-white'
@@ -303,10 +334,13 @@ function LandingPage() {
                 }`}
               >
                 Login
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
                 onClick={() => setActiveTab('register')}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
                 className={`flex-1 py-2 text-sm font-semibold transition-colors ${
                   activeTab === 'register'
                     ? 'bg-[#5236ab] text-white'
@@ -314,7 +348,7 @@ function LandingPage() {
                 }`}
               >
                 Register
-              </button>
+              </motion.button>
             </div>
 
             {activeTab === 'login'
@@ -322,15 +356,21 @@ function LandingPage() {
               : <RegisterForm onSuccess={handleAuthSuccess} />
             }
           </div>
-        </div>
+        </motion.div>
 
         {/* How it works */}
-        <div className="w-full max-w-2xl mb-1">
+        <motion.div
+          className="w-full max-w-2xl mb-1"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={staggerContainer}
+        >
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm px-8 py-4">
             <p className="text-xs font-bold tracking-widest text-slate-400 uppercase mb-3 text-left">How it works</p>
             <div className="flex items-start justify-between gap-2">
 
-              <div className="flex flex-col items-center gap-2 flex-1 text-center">
+              <motion.div className="flex flex-col items-center gap-2 flex-1 text-center" variants={fadeUp}>
                 <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center mb-1">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5236ab" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="3" />
@@ -339,11 +379,11 @@ function LandingPage() {
                 </div>
                 <span className="text-xs font-bold text-slate-700">Connect Azure DevOps</span>
                 <span className="text-xs text-slate-400 leading-relaxed">Link your org and PAT in Settings</span>
-              </div>
+              </motion.div>
 
               <div className="flex items-center pt-5 text-slate-300 text-lg flex-shrink-0">→</div>
 
-              <div className="flex flex-col items-center gap-2 flex-1 text-center">
+              <motion.div className="flex flex-col items-center gap-2 flex-1 text-center" variants={fadeUp}>
                 <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mb-1">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -352,11 +392,11 @@ function LandingPage() {
                 </div>
                 <span className="text-xs font-bold text-slate-700">Enter a Work Item ID</span>
                 <span className="text-xs text-slate-400 leading-relaxed">Paste the Azure DevOps ID in Analyze</span>
-              </div>
+              </motion.div>
 
               <div className="flex items-center pt-5 text-slate-300 text-lg flex-shrink-0">→</div>
 
-              <div className="flex flex-col items-center gap-2 flex-1 text-center">
+              <motion.div className="flex flex-col items-center gap-2 flex-1 text-center" variants={fadeUp}>
                 <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center mb-1">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 20h9" />
@@ -365,14 +405,25 @@ function LandingPage() {
                 </div>
                 <span className="text-xs font-bold text-slate-700">Get instant feedback</span>
                 <span className="text-xs text-slate-400 leading-relaxed">Scores, met criteria, and improvements</span>
-              </div>
+              </motion.div>
 
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 pb-2 max-w-4xl mx-auto w-full">
-          <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-3 shadow-sm">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 px-6 pb-2 max-w-4xl mx-auto w-full"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={staggerContainer}
+        >
+          <motion.div
+            className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-3 shadow-sm"
+            variants={fadeUp}
+            whileHover={{ y: -4, boxShadow: "0 8px 20px -6px rgba(15, 23, 42, 0.12)" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
             <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 11l3 3L22 4" />
@@ -381,9 +432,14 @@ function LandingPage() {
             </div>
             <p className="font-semibold text-slate-800">User Story Validation</p>
             <p className="text-sm text-slate-500 leading-relaxed">Verify clarity, acceptance criteria, and overall completeness.</p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-3 shadow-sm">
+          <motion.div
+            className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-3 shadow-sm"
+            variants={fadeUp}
+            whileHover={{ y: -4, boxShadow: "0 8px 20px -6px rgba(15, 23, 42, 0.12)" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
             <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5236ab" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="16 18 22 12 16 6" />
@@ -392,9 +448,14 @@ function LandingPage() {
             </div>
             <p className="font-semibold text-slate-800">Code Quality Check</p>
             <p className="text-sm text-slate-500 leading-relaxed">Detect bad practices, complexity, and coding standard violations.</p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-3 shadow-sm">
+          <motion.div
+            className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col gap-3 shadow-sm"
+            variants={fadeUp}
+            whileHover={{ y: -4, boxShadow: "0 8px 20px -6px rgba(15, 23, 42, 0.12)" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
             <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="20" x2="18" y2="10" />
@@ -405,8 +466,8 @@ function LandingPage() {
             </div>
             <p className="font-semibold text-slate-800">Actionable Feedback</p>
             <p className="text-sm text-slate-500 leading-relaxed">Receive clear, actionable suggestions for improvement.</p>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   )
