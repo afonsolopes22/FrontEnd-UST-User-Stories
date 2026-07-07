@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useHistory } from '../../_context/HistoryContext'
 import { useAuth } from '@/app/_context/AuthContext'
 import styles from './dashboard.module.css'
@@ -363,8 +364,17 @@ export default function Page() {
                             </tr>
                             </thead>
                             <tbody>
+                            <AnimatePresence initial={false}>
                             {pageItems.map(({ wid, latest, count }) => (
-                                <tr key={rowKey({ wid, latest })} className={styles.row}>
+                                <motion.tr
+                                    key={rowKey({ wid, latest })}
+                                    layout
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.98 }}
+                                    transition={{ type: 'spring', stiffness: 350, damping: 40 }}
+                                    className={styles.row}
+                                >
                                     <td className={styles.td}>
                                         <span className={styles.idBadge}>#{wid}</span>
                                     </td>
@@ -477,8 +487,9 @@ export default function Page() {
                                             </div>
                                         )}
                                     </td>
-                                </tr>
+                                </motion.tr>
                             ))}
+                            </AnimatePresence>
                             </tbody>
                         </table>
                     </div>
