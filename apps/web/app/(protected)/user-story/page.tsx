@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useHistory, HistoryItem } from '../../_context/HistoryContext'
 import { useAuth } from '@/app/_context/AuthContext'
+import { CoreSpinLoader } from '@/components/ui/core-spin-loader'
 import styles from './user-story.module.css'
 
 const EVALUATE_URL = 'https://tfc-userstories.onrender.com/evaluate/azure/sync'
@@ -39,17 +40,6 @@ function ScoreRing({ value, label, color }: { value: number; label: string; colo
                 </text>
             </svg>
             <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#888', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-        {label}
-      </span>
-        </div>
-    )
-}
-
-function ScoreRingEmpty({ label }: { label: string }) {
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-            <div className={styles.skeletonRing} />
-            <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#ccc', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
         {label}
       </span>
         </div>
@@ -214,23 +204,8 @@ function WorkItemDetail() {
                         <h1 style={{ margin: 0, fontSize: '20px' }}>
                             Work Item <span className={styles.workItemId}>#{workItemId}</span>
                         </h1>
-                        <p className={styles.streamStatus}>⬤ Evaluating…</p>
                     </div>
-                    <div className={styles.scoreCard}>
-                        <ScoreRingEmpty label="Score" />
-                        <ScoreRingEmpty label="Code Quality" />
-                        <div style={{ flex: 1, paddingLeft: '0.5rem', display: 'flex', alignItems: 'center' }}>
-                            <div className={styles.skeletonSummary}>
-                                <div className={styles.skeletonLine} style={{ width: '90%' }} />
-                                <div className={styles.skeletonLine} style={{ width: '75%' }} />
-                                <div className={styles.skeletonLine} style={{ width: '60%' }} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className={styles.criteriaGrid}>
-                        <div className={styles.skeletonCard} />
-                        <div className={styles.skeletonCard} />
-                    </div>
+                    <CoreSpinLoader />
                 </div>
             )
         }
