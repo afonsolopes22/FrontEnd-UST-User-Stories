@@ -6,8 +6,9 @@ import { animate } from 'framer-motion'
 const TICKS = 24
 
 function statusFor(value: number) {
-    if (value >= 70) return { stroke: '#22c55e', text: '#15803d', label: 'High' }
-    if (value >= 50) return { stroke: '#f59e0b', text: '#b45309', label: 'Medium' }
+    const rounded = Math.round(value)
+    if (rounded >= 70) return { stroke: '#22c55e', text: '#15803d', label: rounded === 100 ? 'Perfect' : 'High' }
+    if (rounded >= 50) return { stroke: '#f59e0b', text: '#b45309', label: 'Medium' }
     return { stroke: '#ef4444', text: '#dc2626', label: 'Low' }
 }
 
