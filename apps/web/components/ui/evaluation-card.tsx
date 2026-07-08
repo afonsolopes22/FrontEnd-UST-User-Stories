@@ -43,51 +43,70 @@ export function EvaluationCard({
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={cardVariants}
-            whileHover={{ y: -3, boxShadow: `0 14px 28px -10px ${c.glow}` }}
-            style={{
-                background: c.bg,
-                border: `1px solid ${c.border}`,
-                borderRadius: 10,
-                padding: '1rem',
-            }}
+            style={{ position: 'relative' }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: '0.75rem', fontSize: 16 }}>
-                <span style={{ color: c.accent }}>{icon}</span>
-                <span style={{ fontSize: 11, fontWeight: 'bold', letterSpacing: '0.06em', color: c.accent }}>
-                    {title}
-                </span>
-            </div>
+            <motion.div initial="rest" whileHover="hover" animate="rest" style={{ position: 'relative' }}>
+                {/* Soft glow — off by default, fades in on hover. Kept subtle on purpose. */}
+                <motion.div
+                    variants={{ rest: { opacity: 0 }, hover: { opacity: 0.3 } }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    style={{
+                        position: 'absolute', inset: -6, borderRadius: 14,
+                        background: c.accent, filter: 'blur(14px)', zIndex: 0, pointerEvents: 'none',
+                    }}
+                />
 
-            {items.length === 0 ? (
-                <p style={{ fontSize: 12, color: '#888', margin: 0 }}>{emptyLabel}</p>
-            ) : (
-                <motion.ul
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.3 }}
-                    variants={listVariants}
-                    style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}
+                <motion.div
+                    variants={{ rest: { y: 0 }, hover: { y: -2 } }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    style={{
+                        position: 'relative',
+                        zIndex: 1,
+                        background: c.bg,
+                        border: `1px solid ${c.border}`,
+                        borderRadius: 10,
+                        padding: '1rem',
+                    }}
                 >
-                    {items.map((text, i) => (
-                        <motion.li
-                            key={i}
-                            variants={itemVariants}
-                            style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, lineHeight: 1.6, color: c.text }}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: '0.75rem', fontSize: 16 }}>
+                        <span style={{ color: c.accent }}>{icon}</span>
+                        <span style={{ fontSize: 11, fontWeight: 'bold', letterSpacing: '0.06em', color: c.accent }}>
+                            {title}
+                        </span>
+                    </div>
+
+                    {items.length === 0 ? (
+                        <p style={{ fontSize: 12, color: '#888', margin: 0 }}>{emptyLabel}</p>
+                    ) : (
+                        <motion.ul
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.3 }}
+                            variants={listVariants}
+                            style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}
                         >
-                            <span
-                                style={{
-                                    width: 15, height: 15, borderRadius: 4, background: c.accent, flexShrink: 0,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2,
-                                    color: '#fff', fontSize: 9, lineHeight: 1,
-                                }}
-                            >
-                                {icon}
-                            </span>
-                            <span>{text}</span>
-                        </motion.li>
-                    ))}
-                </motion.ul>
-            )}
+                            {items.map((text, i) => (
+                                <motion.li
+                                    key={i}
+                                    variants={itemVariants}
+                                    style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, lineHeight: 1.6, color: c.text }}
+                                >
+                                    <span
+                                        style={{
+                                            width: 15, height: 15, borderRadius: 4, background: c.accent, flexShrink: 0,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2,
+                                            color: '#fff', fontSize: 9, lineHeight: 1,
+                                        }}
+                                    >
+                                        {icon}
+                                    </span>
+                                    <span>{text}</span>
+                                </motion.li>
+                            ))}
+                        </motion.ul>
+                    )}
+                </motion.div>
+            </motion.div>
         </motion.div>
     )
 }
