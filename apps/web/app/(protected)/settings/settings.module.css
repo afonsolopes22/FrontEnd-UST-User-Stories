@@ -1,7 +1,7 @@
 /* ── Shell: full-height sidebar + main ───────────────────────────────────── */
 .shell {
   display: flex;
-  min-height: calc(100vh - 48px);
+  min-height: 100%;
 }
 
 /* ── Left sidebar ────────────────────────────────────────────────────────── */

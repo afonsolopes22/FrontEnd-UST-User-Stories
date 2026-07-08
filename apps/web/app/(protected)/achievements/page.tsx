@@ -40,6 +40,18 @@ const METRIC_LABEL: Record<string, string> = { score: 'score', quality: 'code qu
 const METRIC_UNIT: Record<string, string> = { score: '%', quality: '%', failed_count: '' }
 const COMPARATOR_LABEL: Record<string, string> = { '>=': 'at least', '>': 'more than', '<=': 'at most', '<': 'less than', '==': 'exactly' }
 
+function isPercentMetric(metric: string) {
+    return metric === 'score' || metric === 'quality'
+}
+
+function clampMetricValue(raw: string, metric: string): string {
+    if (raw === '') return raw
+    const n = parseFloat(raw)
+    if (Number.isNaN(n)) return raw
+    const clamped = isPercentMetric(metric) ? Math.min(100, Math.max(0, n)) : Math.max(0, n)
+    return clamped === n ? raw : String(clamped)
+}
+
 function LockIcon() {
     return (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -196,6 +208,10 @@ export default function AchievementsPage() {
             setSaveError('The condition value must be a number.')
             return
         }
+        if (isPercentMetric(metric1) && (v1 < 0 || v1 > 100)) {
+            setSaveError('Percentage values must be between 0 and 100.')
+            return
+        }
         const n = parseInt(countRequired, 10)
         if (Number.isNaN(n) || n < 1) {
             setSaveError('Number of evaluations must be at least 1.')
@@ -218,6 +234,11 @@ export default function AchievementsPage() {
                 const v2 = parseFloat(value2)
                 if (Number.isNaN(v2)) {
                     setSaveError('The second condition value must be a number.')
+                    setSaving(false)
+                    return
+                }
+                if (isPercentMetric(metric2) && (v2 < 0 || v2 > 100)) {
+                    setSaveError('Percentage values must be between 0 and 100.')
                     setSaving(false)
                     return
                 }
@@ -352,7 +373,7 @@ export default function AchievementsPage() {
 
                         <label style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>Condition</label>
                         <div style={{ display: 'flex', gap: 8, margin: '4px 0 8px', flexWrap: 'wrap' }}>
-                            <select value={metric1} onChange={e => setMetric1(e.target.value)}
+                            <select value={metric1} onChange={e => { setMetric1(e.target.value); setValue1(v => clampMetricValue(v, e.target.value)) }}
                                     style={{ flex: '1 1 150px', padding: '7px 8px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 13 }}>
                                 {METRIC_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                             </select>
@@ -362,8 +383,10 @@ export default function AchievementsPage() {
                             </select>
                             <input
                                 type="number"
+                                min={0}
+                                max={isPercentMetric(metric1) ? 100 : undefined}
                                 value={value1}
-                                onChange={e => setValue1(e.target.value)}
+                                onChange={e => setValue1(clampMetricValue(e.target.value, metric1))}
                                 style={{ width: 90, padding: '7px 8px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 13 }}
                             />
                         </div>
@@ -378,7 +401,7 @@ export default function AchievementsPage() {
                         ) : (
                             <div style={{ display: 'flex', gap: 8, margin: '0 0 12px', flexWrap: 'wrap', alignItems: 'center' }}>
                                 <span style={{ fontSize: 12, color: '#6b7280' }}>and</span>
-                                <select value={metric2} onChange={e => setMetric2(e.target.value)}
+                                <select value={metric2} onChange={e => { setMetric2(e.target.value); setValue2(v => clampMetricValue(v, e.target.value)) }}
                                         style={{ flex: '1 1 150px', padding: '7px 8px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 13 }}>
                                     {METRIC_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                 </select>
@@ -388,8 +411,10 @@ export default function AchievementsPage() {
                                 </select>
                                 <input
                                     type="number"
+                                    min={0}
+                                    max={isPercentMetric(metric2) ? 100 : undefined}
                                     value={value2}
-                                    onChange={e => setValue2(e.target.value)}
+                                    onChange={e => setValue2(clampMetricValue(e.target.value, metric2))}
                                     style={{ width: 90, padding: '7px 8px', borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 13 }}
                                 />
                                 <button
