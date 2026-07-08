@@ -58,99 +58,12 @@
   margin: 0;
 }
 
-/* Criteria grid */
+/* Criteria grid — card contents now rendered by components/ui/evaluation-card.tsx */
 .criteriaGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   margin-bottom: 1rem;
-}
-
-.criteriaCardGreen {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 10px;
-  padding: 1rem;
-}
-
-.criteriaCardOrange {
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  border-radius: 10px;
-  padding: 1rem;
-}
-
-.criteriaHeader {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 0.75rem;
-  font-size: 16px;
-}
-
-.criteriaLabelGreen {
-  font-size: 11px;
-  font-weight: bold;
-  letter-spacing: 0.06em;
-  color: #15803d;
-}
-
-.criteriaLabelOrange {
-  font-size: 11px;
-  font-weight: bold;
-  letter-spacing: 0.06em;
-  color: #c2410c;
-}
-
-.criteriaListGreen {
-  margin: 0;
-  padding-left: 1.25rem;
-  list-style-type: disc;
-  font-size: 12px;
-  color: #166534;
-}
-
-.criteriaListOrange {
-  margin: 0;
-  padding-left: 1.25rem;
-  list-style-type: disc;
-  font-size: 12px;
-  color: #9a3412;
-}
-
-.criteriaItem {
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
-}
-
-.criteriaEmpty {
-  font-size: 12px;
-  color: #888;
-  margin: 0;
-}
-
-/* Improvements */
-.improvementsCard {
-  background: #ede9f8;
-  border: 1px solid #cbc3e6;
-  border-radius: 10px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.improvementsLabel {
-  font-size: 11px;
-  font-weight: bold;
-  letter-spacing: 0.06em;
-  color: #5236ab;
-}
-
-.improvementsList {
-  margin: 0;
-  padding-left: 1.25rem;
-  list-style-type: disc;
-  font-size: 12px;
-  color: #200a58;
 }
 
 /* History section */

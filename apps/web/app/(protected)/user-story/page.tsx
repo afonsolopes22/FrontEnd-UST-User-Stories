@@ -6,6 +6,7 @@ import { useHistory, HistoryItem } from '../../_context/HistoryContext'
 import { useAuth } from '@/app/_context/AuthContext'
 import { CoreSpinLoader } from '@/components/ui/core-spin-loader'
 import { ScoreRing } from '@/components/ui/score-ring'
+import { EvaluationCard } from '@/components/ui/evaluation-card'
 import styles from './user-story.module.css'
 
 const EVALUATE_URL = 'https://tfc-userstories.onrender.com/evaluate/azure/sync'
@@ -35,53 +36,19 @@ function SubmissionModal({ sub, onClose }: { sub: HistoryItem; onClose: () => vo
                 </div>
 
                 <div className={styles.modalCriteriaGrid}>
-                    <div className={styles.criteriaCardGreen}>
-                        <div className={styles.criteriaHeader}>
-                            <span>✓</span>
-                            <span className={styles.criteriaLabelGreen}>PASSED ({sub.passed.length})</span>
-                        </div>
-                        {sub.passed.length === 0
-                            ? <p className={styles.criteriaEmpty}>—</p>
-                            : <ul className={styles.criteriaListGreen}>
-                                {sub.passed.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                            </ul>
-                        }
-                    </div>
-                    <div className={styles.criteriaCardOrange}>
-                        <div className={styles.criteriaHeader}>
-                            <span>✗</span>
-                            <span className={styles.criteriaLabelOrange}>FAILED ({sub.failed.length})</span>
-                        </div>
-                        {sub.failed.length === 0
-                            ? <p className={styles.criteriaEmpty}>—</p>
-                            : <ul className={styles.criteriaListOrange}>
-                                {sub.failed.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                            </ul>
-                        }
-                    </div>
+                    <EvaluationCard variant="pass" icon="✓" title={`PASSED (${sub.passed.length})`} items={sub.passed} />
+                    <EvaluationCard variant="fail" icon="✗" title={`FAILED (${sub.failed.length})`} items={sub.failed} />
                 </div>
 
                 {sub.improvements.length > 0 && (
-                    <div className={styles.improvementsCard}>
-                        <div className={styles.criteriaHeader}>
-                            <span>→</span>
-                            <span className={styles.improvementsLabel}>IMPROVEMENTS</span>
-                        </div>
-                        <ul className={styles.improvementsList}>
-                            {sub.improvements.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                        </ul>
+                    <div style={{ marginTop: '1rem' }}>
+                        <EvaluationCard variant="improvements" icon="→" title="IMPROVEMENTS" items={sub.improvements} />
                     </div>
                 )}
 
                 {sub.notes.length > 0 && (
-                    <div className={styles.improvementsCard} style={{ borderLeftColor: '#0ea5e9' }}>
-                        <div className={styles.criteriaHeader}>
-                            <span style={{ color: '#0369a1' }}>★</span>
-                            <span className={styles.improvementsLabel} style={{ color: '#0369a1' }}>BEST PRACTICES</span>
-                        </div>
-                        <ul className={styles.improvementsList}>
-                            {sub.notes.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                        </ul>
+                    <div style={{ marginTop: '1rem' }}>
+                        <EvaluationCard variant="bestPractices" icon="★" title="BEST PRACTICES" items={sub.notes} />
                     </div>
                 )}
             </div>
@@ -234,49 +201,19 @@ function WorkItemDetail() {
                 </div>
 
                 <div className={styles.criteriaGrid}>
-                    <div className={styles.criteriaCardGreen}>
-                        <div className={styles.criteriaHeader}>
-                            <span>✓</span>
-                            <span className={styles.criteriaLabelGreen}>PASSED ({r.passed.length})</span>
-                        </div>
-                        {r.passed.length === 0
-                            ? <p className={styles.criteriaEmpty}>—</p>
-                            : <ul className={styles.criteriaListGreen}>{r.passed.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}</ul>
-                        }
-                    </div>
-                    <div className={styles.criteriaCardOrange}>
-                        <div className={styles.criteriaHeader}>
-                            <span>✗</span>
-                            <span className={styles.criteriaLabelOrange}>FAILED ({r.failed.length})</span>
-                        </div>
-                        {r.failed.length === 0
-                            ? <p className={styles.criteriaEmpty}>—</p>
-                            : <ul className={styles.criteriaListOrange}>{r.failed.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}</ul>
-                        }
-                    </div>
+                    <EvaluationCard variant="pass" icon="✓" title={`PASSED (${r.passed.length})`} items={r.passed} />
+                    <EvaluationCard variant="fail" icon="✗" title={`FAILED (${r.failed.length})`} items={r.failed} />
                 </div>
 
                 {r.improvements.length > 0 && (
-                    <div className={styles.improvementsCard}>
-                        <div className={styles.criteriaHeader}>
-                            <span>→</span>
-                            <span className={styles.improvementsLabel}>IMPROVEMENTS</span>
-                        </div>
-                        <ul className={styles.improvementsList}>
-                            {r.improvements.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                        </ul>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <EvaluationCard variant="improvements" icon="→" title="IMPROVEMENTS" items={r.improvements} />
                     </div>
                 )}
 
                 {r.best_practices_feedback?.length > 0 && (
-                    <div className={styles.improvementsCard} style={{ borderLeftColor: '#0ea5e9' }}>
-                        <div className={styles.criteriaHeader}>
-                            <span style={{ color: '#0369a1' }}>★</span>
-                            <span className={styles.improvementsLabel} style={{ color: '#0369a1' }}>BEST PRACTICES</span>
-                        </div>
-                        <ul className={styles.improvementsList}>
-                            {r.best_practices_feedback.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                        </ul>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <EvaluationCard variant="bestPractices" icon="★" title="BEST PRACTICES" items={r.best_practices_feedback} />
                     </div>
                 )}
             </div>
@@ -320,54 +257,19 @@ function WorkItemDetail() {
             </div>
 
             <div className={styles.criteriaGrid}>
-                <div className={styles.criteriaCardGreen}>
-                    <div className={styles.criteriaHeader}>
-                        <span>✓</span>
-                        <span className={styles.criteriaLabelGreen}>PASSED ({latest.passed.length})</span>
-                    </div>
-                    {latest.passed.length === 0
-                        ? <p className={styles.criteriaEmpty}>—</p>
-                        : <ul className={styles.criteriaListGreen}>
-                            {latest.passed.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                        </ul>
-                    }
-                </div>
-
-                <div className={styles.criteriaCardOrange}>
-                    <div className={styles.criteriaHeader}>
-                        <span>✗</span>
-                        <span className={styles.criteriaLabelOrange}>FAILED ({latest.failed.length})</span>
-                    </div>
-                    {latest.failed.length === 0
-                        ? <p className={styles.criteriaEmpty}>—</p>
-                        : <ul className={styles.criteriaListOrange}>
-                            {latest.failed.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                        </ul>
-                    }
-                </div>
+                <EvaluationCard variant="pass" icon="✓" title={`PASSED (${latest.passed.length})`} items={latest.passed} />
+                <EvaluationCard variant="fail" icon="✗" title={`FAILED (${latest.failed.length})`} items={latest.failed} />
             </div>
 
             {latest.improvements.length > 0 && (
-                <div className={styles.improvementsCard}>
-                    <div className={styles.criteriaHeader}>
-                        <span>→</span>
-                        <span className={styles.improvementsLabel}>IMPROVEMENTS</span>
-                    </div>
-                    <ul className={styles.improvementsList}>
-                        {latest.improvements.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                    </ul>
+                <div style={{ marginBottom: '1rem' }}>
+                    <EvaluationCard variant="improvements" icon="→" title="IMPROVEMENTS" items={latest.improvements} />
                 </div>
             )}
 
             {latest.notes.length > 0 && (
-                <div className={styles.improvementsCard} style={{ borderLeftColor: '#0ea5e9' }}>
-                    <div className={styles.criteriaHeader}>
-                        <span style={{ color: '#0369a1' }}>★</span>
-                        <span className={styles.improvementsLabel} style={{ color: '#0369a1' }}>BEST PRACTICES</span>
-                    </div>
-                    <ul className={styles.improvementsList}>
-                        {latest.notes.map((c, i) => <li key={i} className={styles.criteriaItem}>{c}</li>)}
-                    </ul>
+                <div style={{ marginBottom: '1rem' }}>
+                    <EvaluationCard variant="bestPractices" icon="★" title="BEST PRACTICES" items={latest.notes} />
                 </div>
             )}
 
