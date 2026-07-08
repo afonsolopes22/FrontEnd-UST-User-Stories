@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useAchievements } from '@/app/_context/AchievementsContext'
 import { useAuth } from '@/app/_context/AuthContext'
 import styles from './achievements.module.css'
@@ -64,48 +65,62 @@ function AchievementCard({
     const { id, name, description, requirement, color, text_color, auto_detectable } = achievement
 
     return (
-        <div
-            className={`${styles.card} ${unlocked ? styles.unlocked : styles.locked}`}
-            style={unlocked ? { borderLeftColor: color } : undefined}
-        >
-            {!unlocked && (
-                <div className={styles.lockOverlay}>
-                    <LockIcon />
-                </div>
-            )}
+        <motion.div initial="rest" whileHover="hover" animate="rest" style={{ position: 'relative' }}>
+            {/* Soft glow — off by default, fades in on hover, tinted with the achievement's own badge color */}
+            <motion.div
+                variants={{ rest: { opacity: 0 }, hover: { opacity: 0.3 } }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                style={{
+                    position: 'absolute', inset: -6, borderRadius: 12,
+                    background: color, filter: 'blur(14px)', zIndex: 0, pointerEvents: 'none',
+                }}
+            />
 
-            <div className={styles.cardHeader}>
+            <motion.div
+                variants={{ rest: { y: 0 }, hover: { y: -2 } }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className={`${styles.card} ${unlocked ? styles.unlocked : styles.locked}`}
+                style={{ position: 'relative', zIndex: 1, ...(unlocked ? { borderLeftColor: color } : {}) }}
+            >
+                {!unlocked && (
+                    <div className={styles.lockOverlay}>
+                        <LockIcon />
+                    </div>
+                )}
+
+                <div className={styles.cardHeader}>
         <span
             className={styles.badge}
             style={unlocked ? { background: color, color: text_color } : undefined}
         >
           {name}
         </span>
-                {isActive && (
-                    <span className={styles.equippedPill}>Equipped</span>
+                    {isActive && (
+                        <span className={styles.equippedPill}>Equipped</span>
+                    )}
+                </div>
+
+                <p className={styles.description}>{description}</p>
+
+                <div className={styles.requirementRow}>
+                    <span className={styles.requirementLabel}>Requirement</span>
+                    <span className={styles.requirementText}>{requirement}</span>
+                </div>
+                {!auto_detectable && (
+                    <p style={{ fontSize: 10, color: '#9ca3af', margin: '2px 0 0' }}>
+                        Manually granted by an admin — not auto-detected.
+                    </p>
                 )}
-            </div>
 
-            <p className={styles.description}>{description}</p>
-
-            <div className={styles.requirementRow}>
-                <span className={styles.requirementLabel}>Requirement</span>
-                <span className={styles.requirementText}>{requirement}</span>
-            </div>
-            {!auto_detectable && (
-                <p style={{ fontSize: 10, color: '#9ca3af', margin: '2px 0 0' }}>
-                    Manually granted by an admin — not auto-detected.
-                </p>
-            )}
-
-            <button
-                className={`${styles.equipBtn} ${isActive ? styles.equipBtnActive : ''}`}
-                disabled={!unlocked || isActive || equipping === id}
-                onClick={() => onEquip(id)}
-            >
-                {equipping === id ? 'Equipping…' : isActive ? 'Equipped' : 'Equip'}
-            </button>
-        </div>
+                <button
+                    className={`${styles.equipBtn} ${isActive ? styles.equipBtnActive : ''}`}
+                    disabled={!unlocked || isActive || equipping === id}
+                    onClick={() => onEquip(id)}
+                >
+                    {equipping === id ? 'Equipping…' : isActive ? 'Equipped' : 'Equip'}
+                </button>
+            </motion.div>
+        </motion.div>
     )
 }
 
