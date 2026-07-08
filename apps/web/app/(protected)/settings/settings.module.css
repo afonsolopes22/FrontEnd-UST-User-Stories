@@ -1,7 +1,7 @@
 /* ── Shell: full-height sidebar + main ───────────────────────────────────── */
 .shell {
   display: flex;
-  min-height: 100%;
+  min-height: calc(100vh - 48px);
 }
 
 /* ── Left sidebar ────────────────────────────────────────────────────────── */
@@ -98,10 +98,13 @@
 }
 
 .sidebarHelp {
+  position: sticky;
+  bottom: 0.75rem;
   margin: 0.5rem 0.5rem 0;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 12px;
+  background: #fff;
 }
 
 .sidebarHelpTitle {
